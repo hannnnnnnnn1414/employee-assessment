@@ -9,34 +9,9 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = [
-            (object)[
-                'id' => 1,
-                'npk' => '1001',
-                'nama' => 'Budi Santoso',
-                'dept' => 'IT',
-                'jabatan' => 'Programmer',
-                'golongan' => 'III'
-            ],
-            (object)[
-                'id' => 2,
-                'npk' => '1002',
-                'nama' => 'Siti Rahayu',
-                'dept' => 'HR',
-                'jabatan' => 'HR Staff',
-                'golongan' => 'II'
-            ],
-            (object)[
-                'id' => 3,
-                'npk' => '1003',
-                'nama' => 'Ahmad Wijaya',
-                'dept' => 'Finance',
-                'jabatan' => 'Accountant',
-                'golongan' => 'IV'
-            ]
-        ];
+        $employees = Employee::all();
 
-        $departments = ['IT', 'HR', 'Finance', 'Marketing', 'Operations', 'Production'];
+        $departments = Employee::select('dept')->distinct()->pluck('dept');
 
         return view('employee', compact('employees', 'departments'));
     }
