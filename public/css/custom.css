@@ -1,0 +1,84 @@
+/* PAGINATION HIJAU TUA */
+.pagination .page-link {
+    color: #218838;
+    border: 1px solid #218838;
+    font-weight: 500;
+}
+.pagination .page-item.active .page-link {
+    background-color: #218838 !important;
+    border-color: #218838 !important;
+    color: white !important;
+}
+.pagination .page-link:hover {
+    background-color: #1e7e34 !important;
+    border-color: #1e7e34 !important;
+    color: white !important;
+}
+   /* TOMBOL UPLOAD HIJAU TUA */
+.btn-upload-dark {
+    background: #218838 !important;     /* Hijau tua tetap */
+    border: none;
+    color: white !important;
+    letter-spacing: 0.5px;
+    box-shadow: none !important;        /* Hilangkan bayangan */
+    transition: none !important;        /* Hilangkan animasi */
+}
+/* TOMBOL TAB CHART: HIJAU + TRANSPARAN + TANPA BORDER */
+.chart-tab .nav-link {
+    background-color: none !important;   /* Hijau transparan */
+    color: #218838 !important;                            /* Teks hijau tua */
+    border: none !important;                              /* HILANGKAN BORDER */
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.5rem 1.2rem;
+    margin: 0 4px;
+    transition: all 0.2s ease;
+    box-shadow: none !important;
+}
+
+/* AKTIF: Latar lebih pekat */
+.chart-tab .nav-link.active {
+    background-color: none!important;   /* Lebih gelap */
+    color: #155724 !important;
+    font-weight: 700;
+    border: none !important;
+}
+
+/* HOVER: Sedikit lebih pekat */
+.chart-tab .nav-link:hover {
+    font: rgba(33, 136, 56, 0.25) !important;
+    background-color: none;
+    border: none;
+}
+
+/* HOVER: HANYA UNTUK MENU YANG TIDAK AKTIF */
+.pc-sidebar .pc-item:not(.pc-active) .pc-link:hover,
+.pc-sidebar .pc-item:not(.active) .pc-link:hover {
+    background: rgba(33, 136, 56, 0.1) !important;
+    border-radius: 8px !important;
+    margin: 0 8px !important;
+    border-left: 3px solid #20c997 !important;
+    transition: all 0.2s ease;
+}
+
+/* MENU AKTIF: TETAP HIJAU, TIDAK ADA HOVER */
+.pc-sidebar .pc-item.pc-active .pc-link,
+.pc-sidebar .pc-item.active .pc-link {
+    background: linear-gradient(135deg, #218838, #1e7e34) !important;
+    color: white !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    margin: 0 8px !important;
+    border-left: 4px solid #20c997 !important;
+    box-shadow: 0 3px 10px rgba(33, 136, 56, 0.3) !important;
+    /* HILANGKAN HOVER */
+    pointer-events: none !important;
+}
+
+/* Icon & teks aktif */
+.pc-sidebar .pc-item.pc-active .pc-mtext,
+.pc-sidebar .pc-item.pc-active .pc-micon i,
+.pc-sidebar .pc-item.active .pc-mtext,
+.pc-sidebar .pc-item.active .pc-micon i {
+    color: white !important;
+}
