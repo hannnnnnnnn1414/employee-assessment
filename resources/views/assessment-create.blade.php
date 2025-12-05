@@ -484,6 +484,23 @@
             }
         };
 
+        // Event listener khusus untuk input izin
+        document.querySelector('input[name="ijin"]').addEventListener('input', function() {
+            // Update nilai disiplin secara realtime
+            const ijintotal = parseInt(this.value) || 0;
+            const disiplinInput = document.querySelector('input[name="disiplin"]');
+            const disiplinAwal = parseFloat(disiplinInput.value) || 0;
+
+            // Hitung disiplin setelah dikurangi izin (tapi jangan update input)
+            const disiplinSetelahIjin = Math.max(40, disiplinAwal - (ijintotal * 10));
+
+            // Tampilkan info pengurangan di console atau alert kecil
+            console.log(`Ijin: ${ijintotal} | Disiplin: ${disiplinAwal} → ${disiplinSetelahIjin}`);
+
+            // Panggil calculateAll untuk update semua perhitungan
+            calculateAll();
+        });
+
         // Fungsi untuk menentukan apakah jabatan adalah manager
         function isManager(jabatan) {
             if (!jabatan) return false;
@@ -547,13 +564,33 @@
             document.getElementById('rata_prestasi').value = rataPrestasi.toFixed(2);
             document.getElementById('sub_total_prestasi').value = subTotalPrestasi.toFixed(2);
 
-            // 2. Hitung Non Prestasi
-            const nonPrestasiInputs = document.querySelectorAll('.nilai-non-prestasi');
+            // 2. Hitung Non Prestasi dengan pengurangan izin pada disiplin
+            const ijintotal = parseInt(document.querySelector('input[name="ijin"]').value) || 0;
+
+            // Ambil nilai disiplin awal dari input
+            let nilaiDisiplin = parseFloat(document.querySelector('input[name="disiplin"]').value) || 0;
+
+            // Kurangi nilai disiplin berdasarkan jumlah izin (setiap izin = 10 poin)
+            const disiplinSetelahIjin = Math.max(40, nilaiDisiplin - (ijintotal * 10));
+
+            const nonPrestasiValues = {
+                kerjasama: parseFloat(document.querySelector('input[name="kerjasama"]').value) || 0,
+                inisiatif_kreatifitas: parseFloat(document.querySelector('input[name="inisiatif_kreatifitas"]')
+                    .value) || 0,
+                keandalan_tanggung_jawab: parseFloat(document.querySelector('input[name="keandalan_tanggung_jawab"]')
+                    .value) || 0,
+                disiplin: disiplinSetelahIjin, // Pakai nilai setelah dikurangi izin
+                integritas_loyalitas: parseFloat(document.querySelector('input[name="integritas_loyalitas"]').value) ||
+                    0,
+                qcc_ss: parseFloat(document.querySelector('input[name="qcc_ss"]').value) || 0
+            };
+
             let totalNonPrestasi = 0;
-            nonPrestasiInputs.forEach(input => {
-                totalNonPrestasi += parseFloat(input.value) || 0;
+            Object.values(nonPrestasiValues).forEach(value => {
+                totalNonPrestasi += value;
             });
-            const rataNonPrestasi = totalNonPrestasi / nonPrestasiInputs.length;
+
+            const rataNonPrestasi = totalNonPrestasi / 6; // Ada 6 kriteria
             const subTotalNonPrestasi = rataNonPrestasi * bobot.non_prestasi;
 
             document.getElementById('rata_non_prestasi').value = rataNonPrestasi.toFixed(2);
@@ -565,14 +602,14 @@
 
             document.getElementById('sub_total_man_management').value = subTotalManManagement.toFixed(2);
 
-            // 4. Hitung Demerit
+            // 4. Hitung Demerit (TANPA IZIN)
             let totalDemerit = 0;
             const demeritConfig = {
-                'ijin': 10,
                 'mangkir': 3,
                 'sp1': 4,
                 'sp2': 8,
                 'sp3': 12
+                // 'ijin' dihapus dari sini
             };
 
             Object.keys(demeritConfig).forEach(name => {

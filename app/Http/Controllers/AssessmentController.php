@@ -165,12 +165,16 @@ class AssessmentController extends Controller
         $rataPrestasi = ($data['kualitas'] + $data['kuantitas']) / 2;
         $subTotalPrestasi = $rataPrestasi * $bobot['prestasi'];
 
+        $ijin = $data['ijin'] ?? 0;
+        $disiplinAwal = $data['disiplin'];
+        $disiplinAkhir = max(40, $disiplinAwal - ($ijin * 10));
+
         // Hitung rata-rata non prestasi
         $nilaiNonPrestasi = [
             $data['kerjasama'],
             $data['inisiatif_kreatifitas'],
             $data['keandalan_tanggung_jawab'],
-            $data['disiplin'],
+            $disiplinAkhir,
             $data['integritas_loyalitas'],
             $data['qcc_ss']
         ];
@@ -185,7 +189,7 @@ class AssessmentController extends Controller
 
         // Hitung demerit
         $demerit = $this->calculateDemerit(
-            $data['ijin'] ?? 0,
+            0,
             $data['mangkir'] ?? 0,
             $data['sp1'] ?? 0,
             $data['sp2'] ?? 0,
@@ -206,7 +210,8 @@ class AssessmentController extends Controller
             'kerjasama' => $data['kerjasama'],
             'inisiatif_kreatifitas' => $data['inisiatif_kreatifitas'],
             'keandalan_tanggung_jawab' => $data['keandalan_tanggung_jawab'],
-            'disiplin' => $data['disiplin'],
+            'disiplin' => $disiplinAkhir,
+            'disiplin_awal' => $disiplinAwal,
             'integritas_loyalitas' => $data['integritas_loyalitas'],
             'qcc_ss' => $data['qcc_ss'],
             'rata_non_prestasi' => round($rataNonPrestasi, 2),
@@ -237,7 +242,7 @@ class AssessmentController extends Controller
      */
     private function calculateDemerit(int $ijin, int $mangkir, int $sp1, int $sp2, int $sp3): int
     {
-        return ($ijin * 10) + ($mangkir * 3) + ($sp1 * 4) + ($sp2 * 8) + ($sp3 * 12);
+        return ($mangkir * 3) + ($sp1 * 4) + ($sp2 * 8) + ($sp3 * 12);
     }
 
     /**
