@@ -29,24 +29,12 @@
                         <span class="pc-mtext">Employee</span>
                     </a>
                 </li>
-
-                @auth
-                    @if (auth()->user()->isSuperAdmin())
-                        <li class="pc-item">
-                            <a href="{{ route('users.index') }}" class="pc-link" id="users-link">
-                                <span class="pc-micon"><i class="ti ti-users"></i></span>
-                                <span class="pc-mtext">User Management</span>
-                            </a>
-                        </li>
-                    @endif
-                @endauth
-
-                {{-- <li class="pc-item">
-                    <a href="{{ route('documents.index') }}" class="pc-link" id="documents-link">
-                        <span class="pc-micon"><i class="ti ti-typography"></i></span>
-                        <span class="pc-mtext">Dokumen</span>
+                <li class="pc-item">
+                    <a href="{{ route('assessment') }}" class="pc-link" id="dashboard-link">
+                        <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+                        <span class="pc-mtext">Assessment</span>
                     </a>
-                </li> --}}
+                </li>
             </ul>
         </div>
     </div>
@@ -62,7 +50,7 @@
                 <div class="row align-items-center">
                     <div class="col-md-12">
                         <div class="page-header-title">
-                            <h5 class="m-b-10" id="page-title">Document Control System</h5>
+                            <h5 class="m-b-10" id="page-title">Employee Assessment System</h5>
                         </div>
                         <ul class="breadcrumb" id="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>

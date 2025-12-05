@@ -21,7 +21,7 @@
                     <div class="card border border-primary">
                         <div class="card-body">
                             <h6 class="mb-2 f-w-400 text-muted">Total Dokumen</h6>
-                            <h4 class="mb-3">{{ number_format($totalDocuments) }}</h4>
+                            {{-- <h4 class="mb-3">{{ number_format($totalDocuments) }}</h4> --}}
                         </div>
                     </div>
                 </div>
@@ -30,7 +30,7 @@
                     <div class="card border border-success">
                         <div class="card-body">
                             <h6 class="mb-2 f-w-400 text-muted">Dokumen Disetujui</h6>
-                            <h4 class="mb-3">{{ number_format($approvedDocuments) }}</h4>
+                            {{-- <h4 class="mb-3">{{ number_format($approvedDocuments) }}</h4> --}}
                         </div>
                     </div>
                 </div>
@@ -39,7 +39,7 @@
                     <div class="card border border-danger">
                         <div class="card-body">
                             <h6 class="mb-2 f-w-400 text-muted">Dokumen Ditolak</h6>
-                            <h4 class="mb-3">{{ number_format($rejectedDocuments) }}</h4>
+                            {{-- <h4 class="mb-3">{{ number_format($rejectedDocuments) }}</h4> --}}
                         </div>
                     </div>
                 </div>
@@ -48,7 +48,7 @@
                     <div class="card border border-warning">
                         <div class="card-body">
                             <h6 class="mb-2 f-w-400 text-muted">Dokumen Menunggu Persetujuan</h6>
-                            <h4 class="mb-3">{{ number_format($pendingDocuments) }}</h4>
+                            {{-- <h4 class="mb-3">{{ number_format($pendingDocuments) }}</h4> --}}
                         </div>
                     </div>
                 </div>
@@ -109,10 +109,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        const monthlyData = @json($monthlyChartData);
-        const weeklyData = @json($weeklyChartData);
-        const departmentData = @json($departmentChartData);
-
         const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
         new Chart(monthlyCtx, {
             type: 'bar',
