@@ -35,6 +35,12 @@
                         <span class="pc-mtext">Assessment</span>
                     </a>
                 </li>
+                <li class="pc-item">
+                    <a href="{{ route('import') }}" class="pc-link" id="dashboard-link">
+                        <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+                        <span class="pc-mtext">Import Excel</span>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

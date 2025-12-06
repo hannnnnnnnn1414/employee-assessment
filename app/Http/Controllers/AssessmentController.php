@@ -34,7 +34,7 @@ class AssessmentController extends Controller
     /**
      * Determine jabatan type (manager/non-manager)
      */
-    private function getJabatanType(string $jabatan): string
+    public function getJabatanType(string $jabatan): string
     {
         $jabatan = Str::lower($jabatan);
         $managerKeywords = ['manager', 'mgr', 'kepala', 'head', 'superintendent', 'supervisor'];
@@ -51,7 +51,7 @@ class AssessmentController extends Controller
     /**
      * Get bobot based on golongan and jabatan
      */
-    private function getBobot(string $golongan, string $jabatanType): array
+    public function getBobot(string $golongan, string $jabatanType): array
     {
         if (!isset(self::BOBOT_CONFIG[$golongan])) {
             // Default values if golongan not found
