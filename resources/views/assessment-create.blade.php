@@ -430,7 +430,6 @@
     <x-footer></x-footer>
 
     <script>
-        // Konfigurasi bobot lengkap
         const BOBOT_CONFIG = {
             'I': {
                 'non-mgr': {
@@ -484,34 +483,22 @@
             }
         };
 
-        // Event listener khusus untuk input izin
         document.querySelector('input[name="ijin"]').addEventListener('input', function() {
-            // Update nilai disiplin secara realtime
             const ijintotal = parseInt(this.value) || 0;
             const disiplinInput = document.querySelector('input[name="disiplin"]');
             const disiplinAwal = parseFloat(disiplinInput.value) || 0;
-
-            // Hitung disiplin setelah dikurangi izin (tapi jangan update input)
             const disiplinSetelahIjin = Math.max(40, disiplinAwal - (ijintotal * 10));
-
-            // Tampilkan info pengurangan di console atau alert kecil
             console.log(`Ijin: ${ijintotal} | Disiplin: ${disiplinAwal} → ${disiplinSetelahIjin}`);
-
-            // Panggil calculateAll untuk update semua perhitungan
             calculateAll();
         });
 
-        // Fungsi untuk menentukan apakah jabatan adalah manager
         function isManager(jabatan) {
             if (!jabatan) return false;
-
             const jabatanLower = jabatan.toLowerCase();
             const managerKeywords = ['manager', 'mgr', 'kepala', 'head', 'superintendent', 'supervisor'];
-
             return managerKeywords.some(keyword => jabatanLower.includes(keyword));
         }
 
-        // Fungsi untuk mendapatkan bobot berdasarkan golongan dan jabatan
         function getBobot(golongan, jabatan) {
             if (!golongan || !BOBOT_CONFIG[golongan]) {
                 return {
@@ -525,7 +512,6 @@
             const jabatanType = isMgr ? 'mgr' : 'non-mgr';
             const config = BOBOT_CONFIG[golongan];
 
-            // Untuk golongan IV dan V, hanya ada manager
             if (['IV', 'V'].includes(golongan)) {
                 return config.mgr || {
                     prestasi: 0.50,
@@ -537,7 +523,6 @@
             return config[jabatanType] || config['non-mgr'];
         }
 
-        // Fungsi utama untuk menghitung semua nilai
         function calculateAll() {
             const golongan = document.getElementById('golongan').value;
             const jabatan = document.getElementById('jabatan').value;
@@ -547,15 +532,12 @@
                 return;
             }
 
-            // Dapatkan bobot
             const bobot = getBobot(golongan, jabatan);
 
-            // Update display bobot
             document.getElementById('bobot-prestasi').textContent = (bobot.prestasi * 100).toFixed(0) + '%';
             document.getElementById('bobot-non-prestasi').textContent = (bobot.non_prestasi * 100).toFixed(0) + '%';
             document.getElementById('bobot-man-management').textContent = (bobot.man_management * 100).toFixed(0) + '%';
 
-            // 1. Hitung Prestasi
             const kualitas = parseFloat(document.querySelector('input[name="kualitas"]').value) || 0;
             const kuantitas = parseFloat(document.querySelector('input[name="kuantitas"]').value) || 0;
             const rataPrestasi = (kualitas + kuantitas) / 2;
@@ -564,13 +546,8 @@
             document.getElementById('rata_prestasi').value = rataPrestasi.toFixed(2);
             document.getElementById('sub_total_prestasi').value = subTotalPrestasi.toFixed(2);
 
-            // 2. Hitung Non Prestasi dengan pengurangan izin pada disiplin
             const ijintotal = parseInt(document.querySelector('input[name="ijin"]').value) || 0;
-
-            // Ambil nilai disiplin awal dari input
             let nilaiDisiplin = parseFloat(document.querySelector('input[name="disiplin"]').value) || 0;
-
-            // Kurangi nilai disiplin berdasarkan jumlah izin (setiap izin = 10 poin)
             const disiplinSetelahIjin = Math.max(40, nilaiDisiplin - (ijintotal * 10));
 
             const nonPrestasiValues = {
@@ -579,37 +556,32 @@
                     .value) || 0,
                 keandalan_tanggung_jawab: parseFloat(document.querySelector('input[name="keandalan_tanggung_jawab"]')
                     .value) || 0,
-                disiplin: disiplinSetelahIjin, // Pakai nilai setelah dikurangi izin
+                disiplin: disiplinSetelahIjin,
                 integritas_loyalitas: parseFloat(document.querySelector('input[name="integritas_loyalitas"]').value) ||
                     0,
                 qcc_ss: parseFloat(document.querySelector('input[name="qcc_ss"]').value) || 0
             };
 
             let totalNonPrestasi = 0;
-            Object.values(nonPrestasiValues).forEach(value => {
-                totalNonPrestasi += value;
-            });
+            Object.values(nonPrestasiValues).forEach(value => totalNonPrestasi += value);
 
-            const rataNonPrestasi = totalNonPrestasi / 6; // Ada 6 kriteria
+            const rataNonPrestasi = totalNonPrestasi / 6;
             const subTotalNonPrestasi = rataNonPrestasi * bobot.non_prestasi;
 
             document.getElementById('rata_non_prestasi').value = rataNonPrestasi.toFixed(2);
             document.getElementById('sub_total_non_prestasi').value = subTotalNonPrestasi.toFixed(2);
 
-            // 3. Hitung Man Management
             const manManagement = parseFloat(document.querySelector('input[name="mengarahkan_menghargai"]').value) || 0;
             const subTotalManManagement = manManagement * bobot.man_management;
 
             document.getElementById('sub_total_man_management').value = subTotalManManagement.toFixed(2);
 
-            // 4. Hitung Demerit (TANPA IZIN)
             let totalDemerit = 0;
             const demeritConfig = {
                 'mangkir': 3,
                 'sp1': 4,
                 'sp2': 8,
                 'sp3': 12
-                // 'ijin' dihapus dari sini
             };
 
             Object.keys(demeritConfig).forEach(name => {
@@ -620,7 +592,6 @@
 
             document.getElementById('demerit').value = totalDemerit;
 
-            // 5. Hitung Total dan Akhir
             const nilaiTotal = subTotalPrestasi + subTotalNonPrestasi + subTotalManManagement;
             const nilaiAkhir = Math.max(0, nilaiTotal - totalDemerit);
             const nilaiMutu = getNilaiMutu(nilaiAkhir);
@@ -630,7 +601,6 @@
             document.getElementById('nilai_mutu').value = nilaiMutu;
         }
 
-        // Fungsi untuk reset perhitungan
         function resetCalculations() {
             const resetFields = [
                 'rata_prestasi', 'sub_total_prestasi',
@@ -639,16 +609,13 @@
                 'nilai_total', 'nilai_akhir', 'nilai_mutu'
             ];
 
-            resetFields.forEach(id => {
-                document.getElementById(id).value = '';
-            });
+            resetFields.forEach(id => document.getElementById(id).value = '');
 
             document.getElementById('bobot-prestasi').textContent = '0%';
             document.getElementById('bobot-non-prestasi').textContent = '0%';
             document.getElementById('bobot-man-management').textContent = '0%';
         }
 
-        // Fungsi untuk menentukan nilai mutu
         function getNilaiMutu(nilai) {
             if (nilai >= 90) return 'BS';
             if (nilai >= 80) return 'B';
@@ -657,7 +624,6 @@
             return 'KS';
         }
 
-        // Fungsi update data karyawan
         function updateEmployeeData() {
             const select = document.getElementById('employee_id');
             const option = select.options[select.selectedIndex];
@@ -668,29 +634,24 @@
                 document.getElementById('dept_seksi').value = option.getAttribute('data-dept') || '';
                 document.getElementById('jabatan').value = option.getAttribute('data-jabatan') || '';
                 document.getElementById('golongan').value = option.getAttribute('data-golongan') || '';
-
                 calculateAll();
             } else {
                 resetCalculations();
             }
         }
 
-        // Event listener saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
-            // Attach event listeners to all input fields
             const allInputs = document.querySelectorAll('input[type="number"], select');
             allInputs.forEach(input => {
                 input.addEventListener('input', calculateAll);
                 input.addEventListener('change', calculateAll);
             });
 
-            // Initial calculation if employee is selected
             if (document.getElementById('employee_id').value) {
                 calculateAll();
             }
         });
 
-        // Validasi form sebelum submit
         document.getElementById('assessmentForm').addEventListener('submit', function(e) {
             const requiredFields = this.querySelectorAll('[required]');
             let isValid = true;
@@ -710,6 +671,7 @@
             }
         });
     </script>
+
 
 </body>
 

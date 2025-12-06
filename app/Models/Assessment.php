@@ -75,9 +75,6 @@ class Assessment extends Model
         'bobot_man_management' => 'float',
     ];
 
-    /**
-     * Get formatted bobot values
-     */
     public function getBobotPrestasiPercentAttribute(): string
     {
         return ($this->bobot_prestasi * 100) . '%';
@@ -93,9 +90,6 @@ class Assessment extends Model
         return ($this->bobot_man_management * 100) . '%';
     }
 
-    /**
-     * Get formatted nilai
-     */
     public function getFormattedNilaiTotalAttribute(): string
     {
         return number_format($this->nilai_total, 2);
@@ -106,9 +100,6 @@ class Assessment extends Model
         return number_format($this->nilai_akhir, 2);
     }
 
-    /**
-     * Determine if employee is manager based on jabatan
-     */
     public function getIsManagerAttribute(): bool
     {
         $jabatan = Str::lower($this->jabatan);

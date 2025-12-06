@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('assessments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained()->onDelete('cascade');
-            $table->string('periode_penilaian'); // Contoh: "Januari 2024"
+            $table->string('periode_penilaian');
             $table->date('tanggal_penilaian');
 
             $table->string('nama');

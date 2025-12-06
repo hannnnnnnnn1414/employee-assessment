@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 
 class AssessmentController extends Controller
 {
-    // Konstanta untuk bobot berdasarkan golongan dan jabatan (manager/non-manager)
     private const BOBOT_CONFIG = [
         'I' => [
             'non-mgr' => ['prestasi' => 0.70, 'non_prestasi' => 0.30, 'man_management' => 0.00],
@@ -31,9 +30,6 @@ class AssessmentController extends Controller
         ],
     ];
 
-    /**
-     * Determine jabatan type (manager/non-manager)
-     */
     public function getJabatanType(string $jabatan): string
     {
         $jabatan = Str::lower($jabatan);
@@ -48,29 +44,22 @@ class AssessmentController extends Controller
         return 'non-mgr';
     }
 
-    /**
-     * Get bobot based on golongan and jabatan
-     */
     public function getBobot(string $golongan, string $jabatanType): array
     {
         if (!isset(self::BOBOT_CONFIG[$golongan])) {
-            // Default values if golongan not found
             return ['prestasi' => 0.60, 'non_prestasi' => 0.35, 'man_management' => 0.05];
         }
 
         $config = self::BOBOT_CONFIG[$golongan];
 
-        // Check if jabatan type exists, otherwise use 'non-mgr' as default
         if (isset($config[$jabatanType])) {
             return $config[$jabatanType];
         }
 
-        // For golongan IV and V, default to 'mgr' since only manager exists in table
         if (in_array($golongan, ['IV', 'V'])) {
             return $config['mgr'];
         }
 
-        // Default to 'non-mgr' for other golongan
         return $config['non-mgr'] ?? ['prestasi' => 0.60, 'non_prestasi' => 0.35, 'man_management' => 0.05];
     }
 
@@ -105,7 +94,6 @@ class AssessmentController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi request
         $validated = $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'periode_penilaian' => 'required|string',
@@ -130,17 +118,12 @@ class AssessmentController extends Controller
             'atasan_yang_menilai' => 'nullable|string|max:100',
         ]);
 
-        // Ambil data karyawan
         $employee = Employee::findOrFail($validated['employee_id']);
-
-        // Tentukan jenis jabatan dan ambil bobot
         $jabatanType = $this->getJabatanType($employee->jabatan);
         $bobot = $this->getBobot($employee->golongan, $jabatanType);
 
-        // Hitung semua nilai
         $calculations = $this->calculateAllValues($validated, $bobot);
 
-        // Simpan data
         $assessment = Assessment::create(array_merge([
             'employee_id' => $validated['employee_id'],
             'periode_penilaian' => $validated['periode_penilaian'],
@@ -156,12 +139,8 @@ class AssessmentController extends Controller
             ->with('success', 'Penilaian karyawan berhasil disimpan!');
     }
 
-    /**
-     * Calculate all values based on validated data and bobot
-     */
     private function calculateAllValues(array $data, array $bobot): array
     {
-        // Hitung rata-rata prestasi
         $rataPrestasi = ($data['kualitas'] + $data['kuantitas']) / 2;
         $subTotalPrestasi = $rataPrestasi * $bobot['prestasi'];
 
@@ -169,7 +148,6 @@ class AssessmentController extends Controller
         $disiplinAwal = $data['disiplin'];
         $disiplinAkhir = max(40, $disiplinAwal - ($ijin * 10));
 
-        // Hitung rata-rata non prestasi
         $nilaiNonPrestasi = [
             $data['kerjasama'],
             $data['inisiatif_kreatifitas'],
@@ -181,13 +159,10 @@ class AssessmentController extends Controller
         $rataNonPrestasi = array_sum($nilaiNonPrestasi) / count($nilaiNonPrestasi);
         $subTotalNonPrestasi = $rataNonPrestasi * $bobot['non_prestasi'];
 
-        // Hitung man management
         $subTotalManManagement = $data['mengarahkan_menghargai'] * $bobot['man_management'];
 
-        // Hitung total nilai
         $nilaiTotal = $subTotalPrestasi + $subTotalNonPrestasi + $subTotalManManagement;
 
-        // Hitung demerit
         $demerit = $this->calculateDemerit(
             0,
             $data['mangkir'] ?? 0,
@@ -196,10 +171,7 @@ class AssessmentController extends Controller
             $data['sp3'] ?? 0
         );
 
-        // Hitung nilai akhir
         $nilaiAkhir = max(0, $nilaiTotal - $demerit);
-
-        // Tentukan nilai mutu
         $nilaiMutu = $this->determineNilaiMutu($nilaiAkhir);
 
         return [
@@ -237,25 +209,19 @@ class AssessmentController extends Controller
         ];
     }
 
-    /**
-     * Calculate total demerit
-     */
     private function calculateDemerit(int $ijin, int $mangkir, int $sp1, int $sp2, int $sp3): int
     {
         return ($mangkir * 3) + ($sp1 * 4) + ($sp2 * 8) + ($sp3 * 12);
     }
 
-    /**
-     * Determine nilai mutu based on nilai akhir
-     */
     private function determineNilaiMutu(float $nilaiAkhir): string
     {
         return match (true) {
-            $nilaiAkhir >= 90 => 'BS', // Baik Sekali
-            $nilaiAkhir >= 80 => 'B',  // Baik
-            $nilaiAkhir >= 70 => 'C',  // Cukup
-            $nilaiAkhir >= 60 => 'K',  // Kurang
-            default => 'KS',           // Kurang Sekali
+            $nilaiAkhir >= 90 => 'BS',
+            $nilaiAkhir >= 80 => 'B',
+            $nilaiAkhir >= 70 => 'C',
+            $nilaiAkhir >= 60 => 'K',
+            default => 'KS',
         };
     }
 }

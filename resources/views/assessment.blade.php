@@ -202,7 +202,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // === DELETE ASSESSMENT ===
             $(document).on('click', '.delete-assessment', function() {
                 const assessmentId = $(this).data('assessment-id');
                 const assessmentNama = $(this).data('assessment-nama');

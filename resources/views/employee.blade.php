@@ -269,7 +269,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // === DELETE EMPLOYEE ===
             $(document).on('click', '.delete-employee', function() {
                 const employeeId = $(this).data('employee-id');
                 const employeeNama = $(this).data('employee-nama');
@@ -278,7 +277,6 @@
                 new bootstrap.Modal('#deleteEmployeeModal').show();
             });
 
-            // === EDIT EMPLOYEE ===
             $(document).on('click', '.edit-employee', function() {
                 const employeeId = $(this).data('employee-id');
                 const npk = $(this).data('employee-npk');
@@ -293,7 +291,6 @@
                 new bootstrap.Modal('#editEmployeeModal').show();
             });
 
-            // === CLEANUP MODAL ON HIDE ===
             ['deleteEmployeeModal', 'editEmployeeModal', 'addEmployeeModal'].forEach(id => {
                 const modalEl = document.getElementById(id);
                 if (modalEl) {
