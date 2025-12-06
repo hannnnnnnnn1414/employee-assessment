@@ -73,7 +73,7 @@ class ImportController extends Controller
     private function prepareEmployeeData(array $row): array
     {
         return [
-            'npk' => $this->cleanValue($row[1]),
+            'npk' => $this->cleanValue($row[1], true),
             'nama' => $this->cleanValue($row[2]),
             'golongan' => $this->cleanValue($row[3]),
             'dept' => $this->cleanValue($row[4]),
@@ -99,11 +99,11 @@ class ImportController extends Controller
             'dept_seksi' => $employee->dept,
             'npk' => $employee->npk,
             'golongan' => $employee->golongan,
-            'ijin' => $this->cleanValue($row[9], true) ?? 0,
-            'mangkir' => $this->cleanValue($row[10], true) ?? 0,
-            'sp1' => $this->cleanValue($row[11], true) ?? 0,
-            'sp2' => $this->cleanValue($row[12], true) ?? 0,
-            'sp3' => $this->cleanValue($row[13], true) ?? 0,
+            'ijin' => $this->cleanValue($row[7], true) ?? 0,
+            'mangkir' => $this->cleanValue($row[8], true) ?? 0,
+            'sp1' => $this->cleanValue($row[9], true) ?? 0,
+            'sp2' => $this->cleanValue($row[10], true) ?? 0,
+            'sp3' => $this->cleanValue($row[11], true) ?? 0,
             'kualitas' => 40,
             'kuantitas' => 40,
             'kerjasama' => 40,
@@ -225,7 +225,7 @@ class ImportController extends Controller
         ];
     }
 
-    private function cleanValue($value, $forceNumeric = false)
+    private function cleanValue($value, $keepZero = false, $forceNumeric = false)
     {
         if (is_null($value) || $value === '') {
             return 0;
@@ -236,6 +236,10 @@ class ImportController extends Controller
 
         if ($value === '') {
             return 0;
+        }
+
+        if ($keepZero) {
+            return $value;
         }
 
         if ($forceNumeric || is_numeric($value)) {
@@ -259,10 +263,7 @@ class ImportController extends Controller
         ];
 
         $data = [
-            ['NO', 'NPK', 'NAMA', 'GOL', 'DEPT', 'NILAI', 'GRADE', 'SD + I', 'M+ST', 'SP I', 'SP II', 'SP III', 'LATE'],
-            [1, 1592, 'Saputra', 'II', 'MIS', '', '', 1, 1, 1, 1, 1, ''],
-            [2, 1593, 'Budi', 'III', 'HRD', '', '', 2, 0, 0, 0, 0, ''],
-            [3, 1594, 'Sari', 'I', 'Finance', '', '', 0, 1, 1, 0, 0, ''],
+            ['NO', 'NPK', 'NAMA', 'GOL', 'DEPT', 'NILAI', 'GRADE', 'SD + I', 'M+ST', 'SP I', 'SP II', 'SP III', 'LATE']
         ];
 
         $filename = 'template_import_penilaian_' . date('Ymd_His') . '.xlsx';
