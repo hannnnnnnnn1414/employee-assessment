@@ -11,7 +11,7 @@ class Assessment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'employee_id',
+        'user_id',
         'periode_penilaian',
         'tanggal_penilaian',
         'nama',
@@ -114,8 +114,12 @@ class Assessment extends Model
         return false;
     }
 
-    public function employee()
+    // public function employee()
+    // {
+    //     return $this->belongsTo(Employee::class);
+    // }
+    public function user()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(User::class);
     }
 }

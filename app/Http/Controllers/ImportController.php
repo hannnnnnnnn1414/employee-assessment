@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Employee;
+use App\Models\User;
 use App\Models\Assessment;
 use App\Imports\ExcelImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class ImportController extends Controller
 {
@@ -43,62 +45,90 @@ class ImportController extends Controller
     {
         $importedCount = 0;
 
+        // Debug: Tampilkan jumlah row
+        Log::info('Total rows in Excel: ' . count($rows));
+
         for ($i = 1; $i < count($rows); $i++) {
             $row = $rows[$i];
 
+            // Debug: Tampilkan row data
+            Log::info('Processing row ' . $i . ': ' . json_encode($row));
+
+            // Cek apakah NPK dan NAMA ada
             if (empty($row[1]) || empty($row[2])) {
+                Log::warning('Row ' . $i . ' skipped: NPK or NAMA empty');
                 continue;
             }
 
-            DB::transaction(function () use ($row, &$importedCount) {
-                $employeeData = $this->prepareEmployeeData($row);
+            try {
+                DB::transaction(function () use ($row, &$importedCount, $i) {
+                    $userData = $this->prepareUserData($row);
 
-                $employee = Employee::where('npk', $employeeData['npk'])->first();
+                    Log::info('User data prepared for row ' . $i . ': ' . json_encode($userData));
 
-                if (!$employee) {
-                    $employee = Employee::create($employeeData);
-                } else {
-                    $employee->update($employeeData);
-                }
+                    $user = User::where('npk', $userData['npk'])->first();
 
-                $this->processAssessmentData($employee, $row);
+                    if (!$user) {
+                        Log::info('Creating new user: ' . $userData['npk']);
+                        $user = User::create($userData);
+                        Log::info('User created with ID: ' . $user->id);
+                    } else {
+                        Log::info('Updating existing user: ' . $user->npk);
+                        $user->update($userData);
+                    }
 
-                $importedCount++;
-            });
+                    $this->processAssessmentData($user, $row);
+
+                    $importedCount++;
+                    Log::info('Row ' . $i . ' imported successfully');
+                });
+            } catch (\Exception $e) {
+                Log::error('Error importing row ' . $i . ': ' . $e->getMessage());
+                Log::error('Trace: ' . $e->getTraceAsString());
+            }
         }
 
+        Log::info('Total imported: ' . $importedCount);
         return $importedCount;
     }
 
-    private function prepareEmployeeData(array $row): array
+    private function prepareUserData(array $row): array
     {
+        $npk = $this->cleanValue($row[1], true);
+        $nama = $this->cleanValue($row[2]);
+
+        $email = strtolower(str_replace(' ', '.', $nama)) . '@gmail.com';
+        $email = $nama . '@gmail.com';
+
         return [
-            'npk' => $this->cleanValue($row[1], true),
-            'nama' => $this->cleanValue($row[2]),
+            'npk' => $npk,
+            'nama' => $nama,
+            'email' => $email,
+            'password' => Hash::make('admin'),
             'golongan' => $this->cleanValue($row[3]),
             'dept' => $this->cleanValue($row[4]),
-            'jabatan' => $this->determineJabatan($this->cleanValue($row[3]), $this->cleanValue($row[4]))
+            'jabatan' => $this->determineJabatan($this->cleanValue($row[3]), $this->cleanValue($row[4])),
         ];
     }
 
-    private function processAssessmentData(Employee $employee, array $row)
+    private function processAssessmentData(User $user, array $row)
     {
         $tahun = date('Y');
         $periode = $this->determinePeriode();
 
-        $assessment = Assessment::where('employee_id', $employee->id)
+        $assessment = Assessment::where('user_id', $user->id)
             ->where('periode_penilaian', $periode)
             ->first();
 
         $assessmentData = [
-            'employee_id' => $employee->id,
+            'user_id' => $user->id,
             'periode_penilaian' => $periode,
             'tanggal_penilaian' => now(),
-            'nama' => $employee->nama,
-            'jabatan' => $employee->jabatan,
-            'dept_seksi' => $employee->dept,
-            'npk' => $employee->npk,
-            'golongan' => $employee->golongan,
+            'nama' => $user->nama,
+            'jabatan' => $user->jabatan,
+            'dept_seksi' => $user->dept,
+            'npk' => $user->npk,
+            'golongan' => $user->golongan,
             'ijin' => $this->cleanValue($row[7], true) ?? 0,
             'mangkir' => $this->cleanValue($row[8], true) ?? 0,
             'sp1' => $this->cleanValue($row[9], true) ?? 0,

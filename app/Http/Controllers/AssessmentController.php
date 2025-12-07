@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Assessment;
-use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 class AssessmentController extends Controller
@@ -65,37 +65,38 @@ class AssessmentController extends Controller
 
     public function show($id)
     {
-        $assessment = Assessment::with('employee')->findOrFail($id);
+        $assessment = Assessment::with('user')->findOrFail($id);
         return view('assessment-show-modal', compact('assessment'));
     }
 
     public function index()
     {
-        $assessments = Assessment::with('employee')
+        $assessments = Assessment::with('user')
             ->orderBy('tanggal_penilaian', 'desc')
             ->get();
 
-        $employees = Employee::all();
+        $users = User::get();
         $periodes = ['Periode 1 | Oktober - Maret', 'Periode 2 | April - September'];
 
-        return view('assessment', compact('assessments', 'employees', 'periodes'));
+        return view('assessment', compact('assessments', 'users', 'periodes'));
     }
 
     public function create()
     {
-        $employees = Employee::orderBy('nama')->get();
+        $users = User::orderBy('nama')->get();
+
         $periodes = [
             'Periode 1 | Oktober - Maret',
             'Periode 2 | April - September'
         ];
 
-        return view('assessment-create', compact('employees', 'periodes'));
+        return view('assessment-create', compact('users', 'periodes'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'employee_id' => 'required|exists:employees,id',
+            'user_id' => 'required|exists:users,id',
             'periode_penilaian' => 'required|string',
             'tanggal_penilaian' => 'required|date',
             'kualitas' => 'required|numeric|min:40|max:100',
@@ -118,25 +119,33 @@ class AssessmentController extends Controller
             'atasan_yang_menilai' => 'nullable|string|max:100',
         ]);
 
-        $employee = Employee::findOrFail($validated['employee_id']);
-        $jabatanType = $this->getJabatanType($employee->jabatan);
-        $bobot = $this->getBobot($employee->golongan, $jabatanType);
+        $user = User::findOrFail($validated['user_id']);
+        $jabatanType = $this->getJabatanType($user->jabatan);
+        $bobot = $this->getBobot($user->golongan, $jabatanType);
 
         $calculations = $this->calculateAllValues($validated, $bobot);
 
         $assessment = Assessment::create(array_merge([
-            'employee_id' => $validated['employee_id'],
+            'user_id' => $validated['user_id'],
             'periode_penilaian' => $validated['periode_penilaian'],
             'tanggal_penilaian' => $validated['tanggal_penilaian'],
-            'nama' => $employee->nama,
-            'jabatan' => $employee->jabatan,
-            'dept_seksi' => $employee->dept,
-            'npk' => $employee->npk,
-            'golongan' => $employee->golongan,
+            'nama' => $user->nama,
+            'jabatan' => $user->jabatan,
+            'dept_seksi' => $user->dept,
+            'npk' => $user->npk,
+            'golongan' => $user->golongan,
         ], $calculations));
 
         return redirect()->route('assessment')
             ->with('success', 'Penilaian karyawan berhasil disimpan!');
+    }
+
+    public function destroy($id)
+    {
+        $assessment = Assessment::findOrFail($id);
+        $assessment->delete();
+
+        return back()->with('success', 'Penilaian karyawan berhasil dihapus!');
     }
 
     private function calculateAllValues(array $data, array $bobot): array

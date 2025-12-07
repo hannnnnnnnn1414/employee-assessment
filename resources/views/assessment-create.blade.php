@@ -47,16 +47,16 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-12 mb-3">
-                                        <label for="employee_id" class="form-label">Pilih Karyawan *</label>
-                                        <select class="form-control" id="employee_id" name="employee_id" required
+                                        <label for="user_id" class="form-label">Pilih Karyawan *</label>
+                                        <select class="form-control" id="user_id" name="user_id" required
                                             onchange="updateEmployeeData()">
                                             <option value="">Pilih Karyawan</option>
-                                            @foreach ($employees as $employee)
-                                                <option value="{{ $employee->id }}" data-npk="{{ $employee->npk }}"
-                                                    data-nama="{{ $employee->nama }}" data-dept="{{ $employee->dept }}"
-                                                    data-jabatan="{{ $employee->jabatan }}"
-                                                    data-golongan="{{ $employee->golongan }}">
-                                                    {{ $employee->npk }} - {{ $employee->nama }}
+                                            @foreach ($users as $user)
+                                                <option value="{{ $user->id }}" data-npk="{{ $user->npk }}"
+                                                    data-nama="{{ $user->nama }}" data-dept="{{ $user->dept }}"
+                                                    data-jabatan="{{ $user->jabatan }}"
+                                                    data-golongan="{{ $user->golongan }}">
+                                                    {{ $user->npk }} - {{ $user->nama }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -625,7 +625,7 @@
         }
 
         function updateEmployeeData() {
-            const select = document.getElementById('employee_id');
+            const select = document.getElementById('user_id');
             const option = select.options[select.selectedIndex];
 
             if (option.value) {
@@ -647,7 +647,7 @@
                 input.addEventListener('change', calculateAll);
             });
 
-            if (document.getElementById('employee_id').value) {
+            if (document.getElementById('user_id').value) {
                 calculateAll();
             }
         });

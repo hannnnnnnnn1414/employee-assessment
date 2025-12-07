@@ -93,15 +93,15 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse ($employees as $index => $employee)
+                                        @forelse ($users as $index => $user)
                                             <tr>
                                                 <td class="text-center">{{ $index + 1 }}</td>
-                                                <td class="text-center">{{ $employee->npk }}</td>
+                                                <td class="text-center">{{ $user->npk }}</td>
                                                 <td class="text-center">
-                                                    <strong>{{ $employee->nama }}</strong>
+                                                    <strong>{{ $user->nama }}</strong>
                                                 </td>
                                                 <td class="text-center">
-                                                    <span class="badge bg-primary">{{ $employee->dept }}</span>
+                                                    <span class="badge bg-primary">{{ $user->dept }}</span>
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center flex-wrap gap-2">
@@ -109,10 +109,10 @@
                                                         <div class="text-center action-item" style="width:50px;">
                                                             <button type="button"
                                                                 class="btn p-0 border-0 bg-transparent edit-employee"
-                                                                data-employee-id="{{ $employee->id }}"
-                                                                data-employee-npk="{{ $employee->npk }}"
-                                                                data-employee-nama="{{ $employee->nama }}"
-                                                                data-employee-dept="{{ $employee->dept }}"
+                                                                data-employee-id="{{ $user->id }}"
+                                                                data-employee-npk="{{ $user->npk }}"
+                                                                data-employee-nama="{{ $user->nama }}"
+                                                                data-employee-dept="{{ $user->dept }}"
                                                                 title="Edit">
                                                                 <i class="bi bi-pencil fs-4 text-warning"></i>
                                                             </button>
@@ -124,8 +124,8 @@
                                                         <div class="text-center action-item" style="width:50px;">
                                                             <button type="button"
                                                                 class="btn p-0 border-0 bg-transparent delete-employee"
-                                                                data-employee-id="{{ $employee->id }}"
-                                                                data-employee-nama="{{ $employee->nama }}"
+                                                                data-employee-id="{{ $user->id }}"
+                                                                data-employee-nama="{{ $user->nama }}"
                                                                 title="Hapus">
                                                                 <i class="bi bi-trash fs-4 text-danger"></i>
                                                             </button>
@@ -137,15 +137,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="text-center py-4">
-                                                    <i class="bi bi-info-circle"
-                                                        style="font-size: 48px; color: #6c757d;"></i>
-                                                    <p class="mt-2 text-muted">Tidak ada data employee.</p>
-                                                    <button type="button" class="btn btn-primary btn-sm"
-                                                        data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
-                                                        <i class="bi bi-person-plus"></i> Tambah Employee Pertama
-                                                    </button>
-                                                </td>
+                                                <td colspan="5" class="text-center">Tidak ada data employee.</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -205,6 +197,16 @@
                             <label for="nama" class="form-label">Nama *</label>
                             <input type="text" class="form-control" id="nama" name="nama" required
                                 placeholder="Masukkan nama lengkap">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" required
+                                placeholder="example@company.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="password" name="password" required
+                                placeholder="Minimal 6 karakter">
                         </div>
                         <div class="mb-3">
                             <label for="dept" class="form-label">Department *</label>
