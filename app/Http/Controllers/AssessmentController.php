@@ -12,11 +12,9 @@ class AssessmentController extends Controller
     private const BOBOT_CONFIG = [
         'I' => [
             'non-mgr' => ['prestasi' => 0.70, 'non_prestasi' => 0.30, 'man_management' => 0.00],
-            'mgr' => ['prestasi' => 0.70, 'non_prestasi' => 0.25, 'man_management' => 0.05],
         ],
         'II' => [
-            'non-mgr' => ['prestasi' => 0.60, 'non_prestasi' => 0.35, 'man_management' => 0.05],
-            'mgr' => ['prestasi' => 0.60, 'non_prestasi' => 0.30, 'man_management' => 0.10],
+            'non-mgr' => ['prestasi' => 0.70, 'non_prestasi' => 0.25, 'man_management' => 0.05],
         ],
         'III' => [
             'non-mgr' => ['prestasi' => 0.60, 'non_prestasi' => 0.35, 'man_management' => 0.05],
@@ -32,13 +30,10 @@ class AssessmentController extends Controller
 
     public function getJabatanType(string $jabatan): string
     {
-        $jabatan = Str::lower($jabatan);
-        $managerKeywords = ['manager', 'mgr', 'kepala', 'head', 'superintendent', 'supervisor'];
+        $jabatan = strtolower(trim($jabatan));
 
-        foreach ($managerKeywords as $keyword) {
-            if (Str::contains($jabatan, $keyword)) {
-                return 'mgr';
-            }
+        if ($jabatan === 'mgr') {
+            return 'mgr';
         }
 
         return 'non-mgr';
@@ -52,12 +47,16 @@ class AssessmentController extends Controller
 
         $config = self::BOBOT_CONFIG[$golongan];
 
-        if (isset($config[$jabatanType])) {
-            return $config[$jabatanType];
+        if (in_array($golongan, ['I', 'II'])) {
+            return $config['non-mgr'];
         }
 
         if (in_array($golongan, ['IV', 'V'])) {
             return $config['mgr'];
+        }
+
+        if ($golongan === 'III') {
+            return $config[$jabatanType] ?? $config['non-mgr'];
         }
 
         return $config['non-mgr'] ?? ['prestasi' => 0.60, 'non_prestasi' => 0.35, 'man_management' => 0.05];

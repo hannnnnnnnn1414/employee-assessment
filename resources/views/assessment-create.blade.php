@@ -436,23 +436,13 @@
                     prestasi: 0.70,
                     non_prestasi: 0.30,
                     man_management: 0.00
-                },
-                'mgr': {
-                    prestasi: 0.70,
-                    non_prestasi: 0.25,
-                    man_management: 0.05
                 }
             },
             'II': {
                 'non-mgr': {
-                    prestasi: 0.60,
-                    non_prestasi: 0.35,
+                    prestasi: 0.70,
+                    non_prestasi: 0.25,
                     man_management: 0.05
-                },
-                'mgr': {
-                    prestasi: 0.60,
-                    non_prestasi: 0.30,
-                    man_management: 0.10
                 }
             },
             'III': {
@@ -494,13 +484,15 @@
 
         function isManager(jabatan) {
             if (!jabatan) return false;
-            const jabatanLower = jabatan.toLowerCase();
-            const managerKeywords = ['manager', 'mgr', 'kepala', 'head', 'superintendent', 'supervisor'];
-            return managerKeywords.some(keyword => jabatanLower.includes(keyword));
+            const jabatanLower = jabatan.toLowerCase().trim();
+            return jabatanLower === 'mgr';
         }
 
         function getBobot(golongan, jabatan) {
-            if (!golongan || !BOBOT_CONFIG[golongan]) {
+            const romanGolongan = convertToRoman(golongan);
+
+            if (!romanGolongan || !BOBOT_CONFIG[romanGolongan]) {
+                console.log('Golongan tidak ditemukan:', golongan, '->', romanGolongan);
                 return {
                     prestasi: 0.60,
                     non_prestasi: 0.35,
@@ -508,20 +500,30 @@
                 };
             }
 
-            const isMgr = isManager(jabatan);
-            const jabatanType = isMgr ? 'mgr' : 'non-mgr';
-            const config = BOBOT_CONFIG[golongan];
+            console.log('Mencari bobot untuk:', romanGolongan, 'Jabatan:', jabatan);
 
-            if (['IV', 'V'].includes(golongan)) {
-                return config.mgr || {
-                    prestasi: 0.50,
-                    non_prestasi: 0.30,
-                    man_management: 0.20
-                };
+            if (['I', 'II'].includes(romanGolongan)) {
+                return BOBOT_CONFIG[romanGolongan]['non-mgr'];
             }
 
-            return config[jabatanType] || config['non-mgr'];
+            if (['IV', 'V'].includes(romanGolongan)) {
+                return BOBOT_CONFIG[romanGolongan]['mgr'];
+            }
+
+            if (romanGolongan === 'III') {
+                const isMgr = isManager(jabatan);
+                const jabatanType = isMgr ? 'mgr' : 'non-mgr';
+                console.log('Golongan III, jabatan type:', jabatanType);
+                return BOBOT_CONFIG[romanGolongan][jabatanType];
+            }
+
+            return {
+                prestasi: 0.60,
+                non_prestasi: 0.35,
+                man_management: 0.05
+            };
         }
+
 
         function calculateAll() {
             const golongan = document.getElementById('golongan').value;
@@ -633,11 +635,26 @@
                 document.getElementById('nama').value = option.getAttribute('data-nama') || '';
                 document.getElementById('dept_seksi').value = option.getAttribute('data-dept') || '';
                 document.getElementById('jabatan').value = option.getAttribute('data-jabatan') || '';
-                document.getElementById('golongan').value = option.getAttribute('data-golongan') || '';
+
+                const golonganAngka = option.getAttribute('data-golongan') || '';
+                const golonganRomawi = convertToRoman(golonganAngka);
+                document.getElementById('golongan').value = golonganRomawi;
+
                 calculateAll();
             } else {
                 resetCalculations();
             }
+        }
+
+        function convertToRoman(num) {
+            const romanMap = {
+                1: 'I',
+                2: 'II',
+                3: 'III',
+                4: 'IV',
+                5: 'V'
+            };
+            return romanMap[num] || num;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
