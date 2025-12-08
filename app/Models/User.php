@@ -46,4 +46,14 @@ class User extends Authenticatable
         }
         return $query;
     }
+
+    public function otps()
+    {
+        return $this->hasMany(Otp::class);
+    }
+
+    public function latestValidOtp()
+    {
+        return $this->otps()->valid()->latest()->first();
+    }
 }

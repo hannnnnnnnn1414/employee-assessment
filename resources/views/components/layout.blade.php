@@ -49,7 +49,8 @@
 
 <!-- [ Header Topbar ] start -->
 <header class="pc-header">
-    <div class="header-wrapper"> <!-- [Mobile Media Block] start -->
+    <div class="header-wrapper">
+        <!-- [Mobile Media Block] start -->
         <!-- [ Breadcrumb ] start -->
         <div class="page-header">
             <div class="page-block">
@@ -75,14 +76,14 @@
                     <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#"
                         role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
                         <i class="fas fa-user" style="font-size: 1rem; margin-right: 8px;"></i>
-                        <span>{{ Auth::user()->name ?? 'Guest' }}</span>
+                        <span>{{ Auth::user()->nama ?? 'Guest' }}</span>
                     </a>
                     <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
                         <div class="dropdown-header">
                             <div class="d-flex mb-1">
                                 <div class="flex-grow-1 ms-3">
-                                    <h6>{{ Auth::user()->name ?? 'Guest' }}</h6>
-                                    <span>{{ Auth::user()->department->name ?? 'Guest' }}</span>
+                                    <h6>{{ Auth::user()->nama ?? 'Guest' }}</h6>
+                                    <span>{{ Auth::user()->npk ?? '' }} | {{ Auth::user()->dept ?? '' }}</span>
                                 </div>
                                 <a href="#!" class="pc-head-link bg-transparent"><i
                                         class="ti ti-power text-danger"></i></a>
@@ -91,12 +92,13 @@
                         <div class="tab-content" id="mysrpTabContent">
                             <div class="tab-pane fade show active" id="drp-tab-1" role="tabpanel"
                                 aria-labelledby="drp-t1" tabindex="0">
-                                {{-- <form method="POST" action="{{ route('logout') }}"> --}}
-                                @csrf
-                                <button type="submit" class="dropdown-item" style="border: none; background: none;">
-                                    <i class="ti ti-power text-danger"></i>
-                                    <span>Logout</span>
-                                </button>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item"
+                                        style="border: none; background: none; width: 100%; text-align: left;">
+                                        <i class="ti ti-power text-danger me-2"></i>
+                                        <span>Logout</span>
+                                    </button>
                                 </form>
                             </div>
                         </div>

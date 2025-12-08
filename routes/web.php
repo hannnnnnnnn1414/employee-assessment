@@ -1,15 +1,24 @@
-    <?php
+<?php
 
-    use Illuminate\Support\Facades\Route;
-    use App\Http\Controllers\DashboardController;
-    use App\Http\Controllers\EmployeeController;
-    use App\Http\Controllers\AssessmentController;
-    use App\Http\Controllers\ImportController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\OtpController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\AssessmentController;
+use App\Http\Controllers\ImportController;
 
-    Route::get('/', function () {
-        return view('dashboard');
-    });
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [OtpController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [OtpController::class, 'login'])->name('login.submit');
+    Route::get('/otp-verify', [OtpController::class, 'showOtpForm'])->name('otp.verify');
+    Route::post('/otp-verify', [OtpController::class, 'verifyOtp'])->name('otp.verify.submit');
+    Route::post('/otp-resend', [OtpController::class, 'resendOtp'])->name('otp.resend');
+});
 
+Route::post('/logout', [OtpController::class, 'logout'])->name('logout');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/employee', [EmployeeController::class, 'index'])->name('employee');
@@ -25,7 +34,7 @@
     Route::put('/assessment/{id}', [AssessmentController::class, 'update'])->name('assessment.update');
     Route::delete('/assessment/{id}', [AssessmentController::class, 'destroy'])->name('assessment.destroy');
 
-
     Route::get('/import', [ImportController::class, 'index'])->name('import');
     Route::post('/import', [ImportController::class, 'store'])->name('import.store');
     Route::get('/import/template', [ImportController::class, 'template'])->name('import.template');
+});
