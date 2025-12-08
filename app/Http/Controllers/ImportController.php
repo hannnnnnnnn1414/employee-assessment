@@ -11,9 +11,39 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ImportController extends Controller
 {
+    private function determinePeriodeFromExcel($periodeCell)
+    {
+        $periodeCell = $this->cleanValue($periodeCell);
+
+        if (empty($periodeCell)) {
+            return $this->determinePeriode();
+        }
+
+        if (str_contains($periodeCell, 'Periode 1')) {
+            $tahun = date('Y');
+            $bulan = date('n');
+
+            return $bulan >= 10
+                ? "Periode 1 | Oktober {$tahun} - Maret " . ($tahun + 1)
+                : "Periode 1 | Oktober " . ($tahun - 1) . " - Maret {$tahun}";
+        }
+
+        if (str_contains($periodeCell, 'Periode 2')) {
+            $tahun = date('Y');
+            return "Periode 2 | April {$tahun} - September {$tahun}";
+        }
+
+        return $this->determinePeriode();
+    }
+
     public function index()
     {
         return view('import');
@@ -37,6 +67,7 @@ class ImportController extends Controller
             return redirect()->route('assessment')
                 ->with('success', "Berhasil mengimpor {$importedCount} data karyawan dan penilaian");
         } catch (\Exception $e) {
+            Log::error('Import error: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -45,76 +76,62 @@ class ImportController extends Controller
     {
         $importedCount = 0;
 
-        // Debug: Tampilkan jumlah row
-        Log::info('Total rows in Excel: ' . count($rows));
+        if (count($rows) < 2) {
+            return 0;
+        }
 
         for ($i = 1; $i < count($rows); $i++) {
             $row = $rows[$i];
 
-            // Debug: Tampilkan row data
-            Log::info('Processing row ' . $i . ': ' . json_encode($row));
-
-            // Cek apakah NPK dan NAMA ada
-            if (empty($row[1]) || empty($row[2])) {
-                Log::warning('Row ' . $i . ' skipped: NPK or NAMA empty');
+            if (empty($row[2]) || empty($row[3])) {
                 continue;
             }
 
             try {
-                DB::transaction(function () use ($row, &$importedCount, $i) {
+                DB::transaction(function () use ($row, &$importedCount) {
                     $userData = $this->prepareUserData($row);
-
-                    Log::info('User data prepared for row ' . $i . ': ' . json_encode($userData));
 
                     $user = User::where('npk', $userData['npk'])->first();
 
                     if (!$user) {
-                        Log::info('Creating new user: ' . $userData['npk']);
                         $user = User::create($userData);
-                        Log::info('User created with ID: ' . $user->id);
                     } else {
-                        Log::info('Updating existing user: ' . $user->npk);
                         $user->update($userData);
                     }
 
                     $this->processAssessmentData($user, $row);
-
                     $importedCount++;
-                    Log::info('Row ' . $i . ' imported successfully');
                 });
             } catch (\Exception $e) {
-                Log::error('Error importing row ' . $i . ': ' . $e->getMessage());
-                Log::error('Trace: ' . $e->getTraceAsString());
             }
         }
 
-        Log::info('Total imported: ' . $importedCount);
         return $importedCount;
     }
 
     private function prepareUserData(array $row): array
     {
-        $npk = $this->cleanValue($row[1], true);
-        $nama = $this->cleanValue($row[2]);
-
-        $email = strtolower(str_replace(' ', '.', $nama)) . '@gmail.com';
-        $email = $nama . '@gmail.com';
+        $npk = $this->cleanValue($row[2], true);
+        $nama = $this->cleanValue($row[3]);
+        $email = strtolower(str_replace(' ', '.', trim($nama))) . '@gmail.com';
 
         return [
             'npk' => $npk,
             'nama' => $nama,
             'email' => $email,
             'password' => Hash::make('admin'),
-            'golongan' => $this->cleanValue($row[3]),
-            'dept' => $this->cleanValue($row[4]),
-            'jabatan' => $this->determineJabatan($this->cleanValue($row[3]), $this->cleanValue($row[4])),
+            'golongan' => $this->cleanValue($row[4]),
+            'dept' => $this->cleanValue($row[5]),
+            'jabatan' => $this->determineJabatan(
+                $this->cleanValue($row[4]),
+                $this->cleanValue($row[5])
+            ),
         ];
     }
 
     private function processAssessmentData(User $user, array $row)
     {
-        $tahun = date('Y');
-        $periode = $this->determinePeriode();
+        $periode = $this->determinePeriodeFromExcel($row[1] ?? '');
 
         $assessment = Assessment::where('user_id', $user->id)
             ->where('periode_penilaian', $periode)
@@ -129,11 +146,11 @@ class ImportController extends Controller
             'dept_seksi' => $user->dept,
             'npk' => $user->npk,
             'golongan' => $user->golongan,
-            'ijin' => $this->cleanValue($row[7], true) ?? 0,
-            'mangkir' => $this->cleanValue($row[8], true) ?? 0,
-            'sp1' => $this->cleanValue($row[9], true) ?? 0,
-            'sp2' => $this->cleanValue($row[10], true) ?? 0,
-            'sp3' => $this->cleanValue($row[11], true) ?? 0,
+            'ijin' => (int)$this->cleanValue($row[8] ?? 0, false, true),
+            'mangkir' => (int)$this->cleanValue($row[9] ?? 0, false, true),
+            'sp1' => (int)$this->cleanValue($row[10] ?? 0, false, true),
+            'sp2' => (int)$this->cleanValue($row[11] ?? 0, false, true),
+            'sp3' => (int)$this->cleanValue($row[12] ?? 0, false, true),
             'kualitas' => 40,
             'kuantitas' => 40,
             'kerjasama' => 40,
@@ -156,17 +173,19 @@ class ImportController extends Controller
 
     private function determineJabatan($golongan, $dept): string
     {
-        $golongan = strtoupper($golongan);
+        $golongan = strtoupper(trim($golongan));
+        $dept = strtoupper(trim($dept));
 
         if (in_array($golongan, ['IV', 'V'])) {
             return 'Manager';
         }
 
-        if (str_contains($golongan, 'III') && str_contains(strtoupper($dept), 'MANAGER')) {
+        if (str_contains($golongan, 'III') && str_contains($dept, 'MANAGER')) {
             return 'Manager';
         }
 
         $deptLower = strtolower($dept);
+
         if (str_contains($deptLower, 'staff') || str_contains($deptLower, 'staf')) {
             return 'Staff';
         }
@@ -183,11 +202,9 @@ class ImportController extends Controller
         $bulan = date('n');
         $tahun = date('Y');
 
-        if ($bulan >= 4 && $bulan <= 9) {
-            return "Periode 2 | April - September {$tahun}";
-        }
-
-        return "Periode 1 | Oktober " . ($tahun - 1) . " - Maret {$tahun}";
+        return ($bulan >= 4 && $bulan <= 9)
+            ? "Periode 2 | April - September {$tahun}"
+            : "Periode 1 | Oktober " . ($tahun - 1) . " - Maret {$tahun}";
     }
 
     private function calculateAssessmentValues(Assessment $assessment)
@@ -197,9 +214,9 @@ class ImportController extends Controller
         $jabatanType = $assessmentController->getJabatanType($assessment->jabatan);
         $bobot = $assessmentController->getBobot($assessment->golongan, $jabatanType);
 
-        $calculations = $this->calculateAssessmentValuesLogic($assessment, $bobot);
-
-        $assessment->fill($calculations);
+        $assessment->fill(
+            $this->calculateAssessmentValuesLogic($assessment, $bobot)
+        );
     }
 
     private function calculateAssessmentValuesLogic(Assessment $assessment, array $bobot): array
@@ -217,6 +234,7 @@ class ImportController extends Controller
             $assessment->integritas_loyalitas,
             $assessment->qcc_ss
         ];
+
         $rataNonPrestasi = array_sum($nilaiNonPrestasi) / count($nilaiNonPrestasi);
         $subTotalNonPrestasi = $rataNonPrestasi * $bobot['non_prestasi'];
 
@@ -224,7 +242,8 @@ class ImportController extends Controller
 
         $nilaiTotal = $subTotalPrestasi + $subTotalNonPrestasi + $subTotalManManagement;
 
-        $demerit = ($assessment->mangkir * 3) +
+        $demerit =
+            ($assessment->mangkir * 3) +
             ($assessment->sp1 * 4) +
             ($assessment->sp2 * 8) +
             ($assessment->sp3 * 12);
@@ -261,8 +280,7 @@ class ImportController extends Controller
             return 0;
         }
 
-        $value = trim($value);
-        $value = str_replace(['"', "'"], '', $value);
+        $value = trim(str_replace(['"', "'"], '', $value));
 
         if ($value === '') {
             return 0;
@@ -276,11 +294,9 @@ class ImportController extends Controller
             $numericValue = preg_replace('/[^0-9.,-]/', '', $value);
             $numericValue = str_replace(',', '.', $numericValue);
 
-            if (strpos($numericValue, '.') !== false) {
-                return (float) $numericValue;
-            }
-
-            return (int) $numericValue;
+            return strpos($numericValue, '.') !== false
+                ? (float)$numericValue
+                : (int)$numericValue;
         }
 
         return $value;
@@ -288,28 +304,132 @@ class ImportController extends Controller
 
     public function template()
     {
-        $headers = [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ];
+        $currentYear = date('Y');
+        $nextYear = $currentYear + 1;
 
         $data = [
-            ['NO', 'NPK', 'NAMA', 'GOL', 'DEPT', 'NILAI', 'GRADE', 'SD + I', 'M+ST', 'SP I', 'SP II', 'SP III', 'LATE']
+            ['NO', 'PERIODE', 'NPK', 'NAMA', 'GOL', 'DEPT', 'NILAI', 'GRADE', 'SD + I', 'M+ST', 'SP I', 'SP II', 'SP III', 'LATE']
         ];
 
         $filename = 'template_import_penilaian_' . date('Ymd_His') . '.xlsx';
 
-        return Excel::download(new class($data) implements FromArray {
+        return Excel::download(new class($data, $currentYear, $nextYear) implements FromArray, \Maatwebsite\Excel\Concerns\WithEvents {
             private $data;
+            private $currentYear;
+            private $nextYear;
 
-            public function __construct($data)
+            public function __construct($data, $currentYear, $nextYear)
             {
                 $this->data = $data;
+                $this->currentYear = $currentYear;
+                $this->nextYear = $nextYear;
             }
 
             public function array(): array
             {
                 return $this->data;
             }
-        }, $filename, \Maatwebsite\Excel\Excel::XLSX, $headers);
+
+            public function registerEvents(): array
+            {
+                return [
+                    \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
+                        $sheet = $event->sheet->getDelegate();
+
+                        $sheet->getColumnDimension('A')->setWidth(8);
+                        $sheet->getColumnDimension('B')->setWidth(30);
+                        $sheet->getColumnDimension('C')->setWidth(12);
+                        $sheet->getColumnDimension('D')->setWidth(25);
+                        $sheet->getColumnDimension('E')->setWidth(8);
+                        $sheet->getColumnDimension('F')->setWidth(20);
+                        $sheet->getColumnDimension('G')->setWidth(10);
+                        $sheet->getColumnDimension('H')->setWidth(10);
+                        $sheet->getColumnDimension('I')->setWidth(10);
+                        $sheet->getColumnDimension('J')->setWidth(10);
+                        $sheet->getColumnDimension('K')->setWidth(8);
+                        $sheet->getColumnDimension('L')->setWidth(8);
+                        $sheet->getColumnDimension('M')->setWidth(8);
+                        $sheet->getColumnDimension('N')->setWidth(10);
+
+                        $headerStyle = [
+                            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                            'fill' => [
+                                'fillType' => Fill::FILL_SOLID,
+                                'startColor' => ['rgb' => '4472C4']
+                            ],
+                            'alignment' => [
+                                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                                'wrapText' => true
+                            ],
+                            'borders' => [
+                                'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN,
+                                    'color' => ['rgb' => '000000']
+                                ]
+                            ]
+                        ];
+
+                        $event->sheet->getStyle('A1:N1')->applyFromArray($headerStyle);
+
+                        $validation = $sheet->getDataValidation('B2:B1000');
+                        $validation->setType(DataValidation::TYPE_LIST);
+                        $validation->setErrorStyle(DataValidation::STYLE_INFORMATION);
+                        $validation->setAllowBlank(false);
+                        $validation->setShowInputMessage(true);
+                        $validation->setShowErrorMessage(true);
+                        $validation->setShowDropDown(true);
+                        $validation->setErrorTitle('Input error');
+                        $validation->setError('Value is not in list.');
+                        $validation->setPromptTitle('Pilih Periode');
+                        $validation->setPrompt('Silakan pilih periode dari dropdown.');
+
+                        $periodeOptions = [
+                            "Periode 1 | Okt {$this->currentYear} - Mar {$this->nextYear}",
+                            "Periode 2 | Apr {$this->currentYear} - Sep {$this->currentYear}"
+                        ];
+
+                        $validation->setFormula1('"' . implode(',', $periodeOptions) . '"');
+
+                        $sheet->setCellValue('A2', '1');
+                        $sheet->setCellValue('I2', '0');
+                        $sheet->setCellValue('J2', '0');
+                        $sheet->setCellValue('K2', '0');
+                        $sheet->setCellValue('L2', '0');
+                        $sheet->setCellValue('M2', '0');
+                        $sheet->setCellValue('N2', '0');
+
+                        $dataRowStyle = [
+                            'borders' => [
+                                'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN,
+                                    'color' => ['rgb' => '000000']
+                                ]
+                            ],
+                            'fill' => [
+                                'fillType' => Fill::FILL_SOLID,
+                                'startColor' => ['rgb' => 'F2F2F2']
+                            ],
+                            'alignment' => [
+                                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                            ]
+                        ];
+
+                        $event->sheet->getStyle('A2:N2')->applyFromArray($dataRowStyle);
+
+                        $centerColumns = ['A', 'E', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'];
+
+                        foreach ($centerColumns as $col) {
+                            $event->sheet->getStyle("{$col}2")
+                                ->getAlignment()
+                                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                        }
+
+                        $sheet->setAutoFilter('A1:N1');
+                        $sheet->freezePane('A2');
+                    }
+                ];
+            }
+        }, $filename);
     }
 }

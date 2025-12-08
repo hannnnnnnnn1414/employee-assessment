@@ -35,13 +35,14 @@
                         </div>
                         <div class="card-body">
                             <div class="alert alert-info">
-                                <h6><i class="ti ti-info-circle"></i> Format Excel yang Diperlukan:</h6>
+                                <h6><i class="ti ti-info-circle"></i> Format Excel Baru:</h6>
                                 <p class="mb-2">Pastikan file Excel memiliki kolom dengan urutan berikut:</p>
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-sm">
                                         <thead class="table-light">
                                             <tr>
                                                 <th>NO</th>
+                                                <th>PERIODE</th>
                                                 <th>NPK</th>
                                                 <th>NAMA</th>
                                                 <th>GOL</th>
@@ -59,6 +60,7 @@
                                         <tbody>
                                             <tr>
                                                 <td>1</td>
+                                                <td>Periode 1 | Okt 2024 - Mar 2025</td>
                                                 <td>1592</td>
                                                 <td>Saputra</td>
                                                 <td>2</td>
@@ -77,10 +79,11 @@
                                 </div>
                                 <p class="mt-2 mb-0">
                                     <strong>Keterangan:</strong><br>
+                                    - PERIODE: Pilih dari dropdown (Periode 1 atau Periode 2)<br>
                                     - SD + I = Ijin<br>
                                     - M+ST = Mangkir<br>
                                     - SP I, SP II, SP III = Surat Peringatan<br>
-                                    - Kolom LATE diabaikan untuk sementara
+                                    - LATE = Keterlambatan
                                 </p>
                             </div>
 
@@ -92,17 +95,17 @@
                                     <input type="file" class="form-control" id="excel_file" name="excel_file"
                                         accept=".xlsx,.xls,.csv" required>
                                     <div class="form-text">
-                                        Format file: .xlsx, .xls, atau .csv
+                                        Gunakan template yang sudah disediakan atau format sesuai tabel di atas
                                     </div>
                                 </div>
 
                                 <div class="alert alert-warning">
                                     <h6><i class="ti ti-alert-triangle"></i> Perhatian:</h6>
                                     <ul class="mb-0">
+                                        <li>Kolom PERIODE harus diisi dengan pilihan dari dropdown</li>
                                         <li>Data karyawan yang sudah ada akan diupdate</li>
-                                        <li>Data assessment akan dibuat/diupdate untuk periode saat ini</li>
+                                        <li>Data assessment akan dibuat/diupdate sesuai periode</li>
                                         <li>Nilai penilaian akan diisi dengan default 40</li>
-                                        <li>Data demerit (ijin, mangkir, SP) akan diisi sesuai Excel</li>
                                     </ul>
                                 </div>
 
@@ -124,9 +127,9 @@
                             <h5>Download Template</h5>
                         </div>
                         <div class="card-body">
-                            <p>Download template Excel untuk memudahkan pengisian data:</p>
+                            <p>Download template Excel dengan format yang benar dan dropdown untuk PERIODE:</p>
                             <a href="{{ route('import.template') }}" class="btn btn-success">
-                                <i class="ti ti-download"></i> Download Template Excel
+                                <i class="ti ti-download"></i> Download Template Excel Baru
                             </a>
                         </div>
                     </div>
