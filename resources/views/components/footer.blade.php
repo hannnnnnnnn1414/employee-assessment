@@ -2,8 +2,8 @@
 <footer class="pc-footer">
     <div class="footer-wrapper">
         <div class="d-flex flex-column flex-md-row text-center text-md-start justify-content-between py-4">
-            <div class="text-body"> Copyright © 2024 <a href="#" class="text-body">Wahana Artha Group</a>. All
-                rights reserved. </div>
+            <div class="text-body"> <a href="#" class="text-body"></a>
+            </div>
         </div>
     </div>
 </footer>
