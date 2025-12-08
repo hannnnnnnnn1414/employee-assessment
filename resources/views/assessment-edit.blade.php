@@ -435,18 +435,27 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="yang_menilai" class="form-label">Yang Menilai</label>
-                                        <input type="text" class="form-control" id="yang_menilai"
-                                            name="yang_menilai"
-                                            value="{{ old('yang_menilai', $assessment->yang_menilai) }}"
-                                            placeholder="Nama penilai...">
+                                        <select name="yang_menilai" class="form-control" id="yang_menilai">
+                                            <option value="">Pilih Penilai</option>
+                                            @foreach ($users as $user)
+                                                <option value="{{ $user->nama }}">
+                                                    {{ $user->nama }} - Golongan {{ $user->golongan }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="atasan_yang_menilai" class="form-label">Atasan Yang
                                             Menilai</label>
-                                        <input type="text" class="form-control" id="atasan_yang_menilai"
-                                            name="atasan_yang_menilai"
-                                            value="{{ old('atasan_yang_menilai', $assessment->atasan_yang_menilai) }}"
-                                            placeholder="Nama atasan penilai...">
+                                        <select name="atasan_yang_menilai" class="form-control"
+                                            id="atasan_yang_menilai">
+                                            <option value="">Pilih Atasan Penilai</option>
+                                            @foreach ($users as $user)
+                                                <option value="{{ $user->nama }}">
+                                                    {{ $user->nama }} - Golongan {{ $user->golongan }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
                             </div>
