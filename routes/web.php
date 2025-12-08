@@ -22,6 +22,7 @@
     Route::post('/assessment', [AssessmentController::class, 'store'])->name('assessment.store');
     Route::get('/assessment/{id}', [AssessmentController::class, 'show'])->name('assessment.show');
     Route::get('/assessment/{id}/edit', [AssessmentController::class, 'edit'])->name('assessment.edit');
+    Route::put('/assessment/{id}', [AssessmentController::class, 'update'])->name('assessment.update');
     Route::delete('/assessment/{id}', [AssessmentController::class, 'destroy'])->name('assessment.destroy');
 
 

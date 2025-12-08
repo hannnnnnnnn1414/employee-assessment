@@ -68,6 +68,67 @@ class AssessmentController extends Controller
         return view('assessment-show-modal', compact('assessment'));
     }
 
+    public function edit($id)
+    {
+        $assessment = Assessment::with('user')->findOrFail($id);
+        $users = User::orderBy('nama')->get();
+        $periodes = [
+            'Periode 1 | Oktober - Maret',
+            'Periode 2 | April - September'
+        ];
+
+        return view('assessment-edit', compact('assessment', 'users', 'periodes'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $assessment = Assessment::findOrFail($id);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'periode_penilaian' => 'required|string',
+            'tanggal_penilaian' => 'required|date',
+            'kualitas' => 'required|numeric|min:40|max:100',
+            'kuantitas' => 'required|numeric|min:40|max:100',
+            'kerjasama' => 'required|numeric|min:40|max:100',
+            'inisiatif_kreatifitas' => 'required|numeric|min:40|max:100',
+            'keandalan_tanggung_jawab' => 'required|numeric|min:40|max:100',
+            'disiplin' => 'required|numeric|min:40|max:100',
+            'integritas_loyalitas' => 'required|numeric|min:40|max:100',
+            'qcc_ss' => 'required|numeric|min:40|max:100',
+            'mengarahkan_menghargai' => 'required|numeric|min:40|max:100',
+            'ijin' => 'nullable|numeric|min:0',
+            'mangkir' => 'nullable|numeric|min:0',
+            'sp1' => 'nullable|numeric|min:0',
+            'sp2' => 'nullable|numeric|min:0',
+            'sp3' => 'nullable|numeric|min:0',
+            'kekuatan' => 'nullable|string|max:500',
+            'kelemahan' => 'nullable|string|max:500',
+            'yang_menilai' => 'nullable|string|max:100',
+            'atasan_yang_menilai' => 'nullable|string|max:100',
+        ]);
+
+        $user = User::findOrFail($validated['user_id']);
+        $jabatanType = $this->getJabatanType($user->jabatan);
+        $bobot = $this->getBobot($user->golongan, $jabatanType);
+
+        $calculations = $this->calculateAllValues($validated, $bobot);
+
+        $assessment->update(array_merge([
+            'user_id' => $validated['user_id'],
+            'periode_penilaian' => $validated['periode_penilaian'],
+            'tanggal_penilaian' => $validated['tanggal_penilaian'],
+            'nama' => $user->nama,
+            'jabatan' => $user->jabatan,
+            'dept_seksi' => $user->dept,
+            'npk' => $user->npk,
+            'golongan' => $user->golongan,
+        ], $calculations));
+
+        return redirect()->route('assessment')
+            ->with('success', 'Penilaian karyawan berhasil diperbarui!');
+    }
+
     public function index()
     {
         $assessments = Assessment::with('user')

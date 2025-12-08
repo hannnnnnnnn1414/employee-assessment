@@ -38,7 +38,7 @@
                 <li class="pc-item">
                     <a href="{{ route('import') }}" class="pc-link" id="dashboard-link">
                         <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
-                        <span class="pc-mtext">Import Excel</span>
+                        <span class="pc-mtext">Import Data</span>
                     </a>
                 </li>
             </ul>
