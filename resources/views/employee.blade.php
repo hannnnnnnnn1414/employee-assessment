@@ -89,6 +89,8 @@
                                             <th class="text-center">NPK</th>
                                             <th class="text-center">Nama</th>
                                             <th class="text-center">Department</th>
+                                            <th class="text-center">Jabatan</th>
+                                            <th class="text-center">Golongan</th>
                                             <th class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
@@ -103,6 +105,8 @@
                                                 <td class="text-center">
                                                     <span class="badge bg-primary">{{ $user->dept }}</span>
                                                 </td>
+                                                <td class="text-center">{{ $user->jabatan ?? '-' }}</td>
+                                                <td class="text-center">{{ $user->golongan ?? '-' }}</td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center flex-wrap gap-2">
                                                         <!-- Edit -->
@@ -113,6 +117,8 @@
                                                                 data-employee-npk="{{ $user->npk }}"
                                                                 data-employee-nama="{{ $user->nama }}"
                                                                 data-employee-dept="{{ $user->dept }}"
+                                                                data-employee-jabatan="{{ $user->jabatan }}"
+                                                                data-employee-golongan="{{ $user->golongan }}"
                                                                 title="Edit">
                                                                 <i class="bi bi-pencil fs-4 text-warning"></i>
                                                             </button>
@@ -217,6 +223,16 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="mb-3">
+                            <label for="jabatan" class="form-label">Jabatan</label>
+                            <input type="text" class="form-control" id="jabatan" name="jabatan"
+                                placeholder="Masukkan jabatan">
+                        </div>
+                        <div class="mb-3">
+                            <label for="golongan" class="form-label">Golongan</label>
+                            <input type="text" class="form-control" id="golongan" name="golongan"
+                                placeholder="Masukkan golongan">
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -257,6 +273,16 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="mb-3">
+                            <label for="edit_jabatan" class="form-label">Jabatan</label>
+                            <input type="text" class="form-control" id="edit_jabatan" name="jabatan"
+                                placeholder="Masukkan jabatan">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_golongan" class="form-label">Golongan</label>
+                            <input type="text" class="form-control" id="edit_golongan" name="golongan"
+                                placeholder="Masukkan golongan">
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -284,14 +310,19 @@
                 const npk = $(this).data('employee-npk');
                 const nama = $(this).data('employee-nama');
                 const dept = $(this).data('employee-dept');
+                const jabatan = $(this).data('employee-jabatan') || '';
+                const golongan = $(this).data('employee-golongan') || '';
 
                 $('#edit_npk').val(npk);
                 $('#edit_nama').val(nama);
                 $('#edit_dept').val(dept);
+                $('#edit_jabatan').val(jabatan);
+                $('#edit_golongan').val(golongan);
                 $('#edit-employee-form').attr('action', `/employee/${employeeId}`);
 
                 new bootstrap.Modal('#editEmployeeModal').show();
             });
+
 
             ['deleteEmployeeModal', 'editEmployeeModal', 'addEmployeeModal'].forEach(id => {
                 const modalEl = document.getElementById(id);
