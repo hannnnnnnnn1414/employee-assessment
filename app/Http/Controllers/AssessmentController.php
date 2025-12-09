@@ -9,6 +9,11 @@ use Illuminate\Support\Str;
 
 class AssessmentController extends Controller
 {
+    private const PERIODES = [
+        'Periode 1 | Oktober - Maret',
+        'Periode 2 | April - September'
+    ];
+
     private const BOBOT_CONFIG = [
         'I' => [
             'non-mgr' => ['prestasi' => 0.70, 'non_prestasi' => 0.30, 'man_management' => 0.00],
@@ -62,11 +67,11 @@ class AssessmentController extends Controller
         return $config['non-mgr'] ?? ['prestasi' => 0.60, 'non_prestasi' => 0.35, 'man_management' => 0.05];
     }
 
-    public function show($id)
-    {
-        $assessment = Assessment::with('user')->findOrFail($id);
-        return view('assessment-show-modal', compact('assessment'));
-    }
+    // public function show($id)
+    // {
+    //     $assessment = Assessment::with('user')->findOrFail($id);
+    //     return view('assessment-show-modal', compact('assessment'));
+    // }
 
     public function edit($id)
     {
@@ -129,16 +134,47 @@ class AssessmentController extends Controller
             ->with('success', 'Penilaian karyawan berhasil diperbarui!');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $assessments = Assessment::with('user')
-            ->orderBy('tanggal_penilaian', 'desc')
-            ->get();
+        $user = auth()->user();
 
-        $users = User::get();
-        $periodes = ['Periode 1 | Oktober - Maret', 'Periode 2 | April - September'];
+        $assessments = $this->getFilteredAssessments($user, $request->periode);
 
-        return view('assessment', compact('assessments', 'users', 'periodes'));
+        $users = $this->getUsersForDropdown($user);
+
+        return view('assessment', [
+            'assessments' => $assessments,
+            'users' => $users,
+            'periodes' => self::PERIODES
+        ]);
+    }
+
+    private function getFilteredAssessments($user, $period = null)
+    {
+        $query = Assessment::with('user');
+
+        if ($user->dept !== 'HR') {
+            $query->whereHas('user', function ($query) use ($user) {
+                $query->where('dept', $user->dept);
+            });
+        }
+
+        if ($period) {
+            $query->where('periode_penilaian', $period);
+        }
+
+        return $query->orderBy('tanggal_penilaian', 'desc')->get();
+    }
+
+    private function getUsersForDropdown($user)
+    {
+        $query = User::query();
+
+        if ($user->dept !== 'HR') {
+            $query->where('dept', $user->dept);
+        }
+
+        return $query->get();
     }
 
     public function create()

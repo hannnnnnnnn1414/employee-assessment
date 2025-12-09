@@ -23,24 +23,28 @@
                         <span class="pc-mtext">Dashboard</span>
                     </a>
                 </li>
-                <li class="pc-item">
-                    <a href="{{ route('employee') }}" class="pc-link" id="dashboard-link">
-                        <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
-                        <span class="pc-mtext">Employee</span>
-                    </a>
-                </li>
+                @if (Auth::user()->dept == 'HR')
+                    <li class="pc-item">
+                        <a href="{{ route('employee') }}" class="pc-link" id="dashboard-link">
+                            <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+                            <span class="pc-mtext">Employee</span>
+                        </a>
+                    </li>
+                @endif
                 <li class="pc-item">
                     <a href="{{ route('assessment') }}" class="pc-link" id="dashboard-link">
                         <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
                         <span class="pc-mtext">Assessment</span>
                     </a>
                 </li>
-                <li class="pc-item">
-                    <a href="{{ route('import') }}" class="pc-link" id="dashboard-link">
-                        <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
-                        <span class="pc-mtext">Import Data</span>
-                    </a>
-                </li>
+                @if (Auth::user()->dept == 'HR')
+                    <li class="pc-item">
+                        <a href="{{ route('import') }}" class="pc-link" id="dashboard-link">
+                            <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+                            <span class="pc-mtext">Import Data</span>
+                        </a>
+                    </li>
+                @endif
             </ul>
         </div>
     </div>

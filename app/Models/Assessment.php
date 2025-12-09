@@ -122,4 +122,24 @@ class Assessment extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function scopeFilterByUserDepartment($query, $user)
+    {
+        if ($user->role !== 'HR') {
+            $query->whereHas('user', function ($query) use ($user) {
+                $query->where('dept', $user->dept);
+            });
+        }
+
+        return $query;
+    }
+
+    public function scopeFilterByPeriod($query, $period)
+    {
+        if ($period) {
+            $query->where('periode_penilaian', $period);
+        }
+
+        return $query;
+    }
 }
