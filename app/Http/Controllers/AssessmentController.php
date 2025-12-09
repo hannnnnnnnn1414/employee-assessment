@@ -128,17 +128,63 @@ class AssessmentController extends Controller
             'dept_seksi' => $user->dept,
             'npk' => $user->npk,
             'golongan' => $user->golongan,
+            'status' => 'completed',
+            'submitted_at' => now(),
         ], $calculations));
 
         return redirect()->route('assessment')
             ->with('success', 'Penilaian karyawan berhasil diperbarui!');
     }
 
+    private function validateImportedAssessment(Request $request, Assessment $assessment)
+    {
+        if ($assessment->is_imported) {
+            $allowedFields = [
+                'kualitas',
+                'kuantitas',
+                'kerjasama',
+                'inisiatif_kreatifitas',
+                'keandalan_tanggung_jawab',
+                'disiplin',
+                'integritas_loyalitas',
+                'qcc_ss',
+                'mengarahkan_menghargai',
+                'kekuatan',
+                'kelemahan',
+                'yang_menilai',
+                'atasan_yang_menilai'
+            ];
+
+            $filteredData = array_filter($request->all(), function ($key) use ($allowedFields) {
+                return in_array($key, $allowedFields);
+            }, ARRAY_FILTER_USE_KEY);
+
+            $filteredData = array_merge($filteredData, [
+                'ijin' => $assessment->ijin,
+                'mangkir' => $assessment->mangkir,
+                'sp1' => $assessment->sp1,
+                'sp2' => $assessment->sp2,
+                'sp3' => $assessment->sp3,
+                'user_id' => $assessment->user_id,
+                'periode_penilaian' => $assessment->periode_penilaian,
+                'tanggal_penilaian' => $assessment->tanggal_penilaian,
+            ]);
+
+            return $filteredData;
+        }
+
+        return $request->all();
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
 
-        $assessments = $this->getFilteredAssessments($user, $request->periode);
+        $assessments = $this->getFilteredAssessments(
+            $user,
+            $request->periode,
+            $request->status
+        );
 
         $users = $this->getUsersForDropdown($user);
 
@@ -149,7 +195,7 @@ class AssessmentController extends Controller
         ]);
     }
 
-    private function getFilteredAssessments($user, $period = null)
+    private function getFilteredAssessments($user, $periode = null, $status = null)
     {
         $query = Assessment::with('user');
 
@@ -159,11 +205,23 @@ class AssessmentController extends Controller
             });
         }
 
-        if ($period) {
-            $query->where('periode_penilaian', $period);
+        if (!empty($periode)) {
+            if ($periode === 'Periode 1 | Oktober - Maret') {
+                $query->where('periode_penilaian', 'LIKE', 'Periode 1%');
+            } elseif ($periode === 'Periode 2 | April - September') {
+                $query->where('periode_penilaian', 'LIKE', 'Periode 2%');
+            } else {
+                $query->where('periode_penilaian', $periode);
+            }
         }
 
-        return $query->orderBy('tanggal_penilaian', 'desc')->get();
+        if (!empty($status)) {
+            $query->where('status', $status);
+        }
+
+        return $query->orderBy('status')
+            ->orderBy('tanggal_penilaian', 'desc')
+            ->get();
     }
 
     private function getUsersForDropdown($user)
@@ -230,6 +288,9 @@ class AssessmentController extends Controller
             'dept_seksi' => $user->dept,
             'npk' => $user->npk,
             'golongan' => $user->golongan,
+            'status' => 'completed',
+            'is_imported' => false,
+            'submitted_at' => now(),
         ], $calculations));
 
         return redirect()->route('assessment')

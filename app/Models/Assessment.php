@@ -48,7 +48,10 @@ class Assessment extends Model
         'atasan_yang_menilai',
         'bobot_prestasi',
         'bobot_non_prestasi',
-        'bobot_man_management'
+        'bobot_man_management',
+        'status',
+        'is_imported',
+        'submitted_at'
     ];
 
     protected $casts = [
@@ -73,6 +76,8 @@ class Assessment extends Model
         'bobot_prestasi' => 'float',
         'bobot_non_prestasi' => 'float',
         'bobot_man_management' => 'float',
+        'is_imported' => 'boolean',
+        'submitted_at' => 'datetime',
     ];
 
     public function getBobotPrestasiPercentAttribute(): string
@@ -114,10 +119,31 @@ class Assessment extends Model
         return false;
     }
 
-    // public function employee()
-    // {
-    //     return $this->belongsTo(Employee::class);
-    // }
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'draft' => 'Not Assessed',
+            'submitted' => 'Pending Review',
+            'completed' => 'Assessed',
+            default => 'Unknown'
+        };
+    }
+
+    public function getStatusColorAttribute(): string
+    {
+        return match ($this->status) {
+            'draft' => 'warning',
+            'submitted' => 'info',
+            'completed' => 'success',
+            default => 'secondary'
+        };
+    }
+
+    public function getIsAssessedAttribute(): bool
+    {
+        return $this->status === 'completed';
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -141,5 +167,53 @@ class Assessment extends Model
         }
 
         return $query;
+    }
+
+    public function scopeFilterByStatus($query, $status)
+    {
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        return $query;
+    }
+
+    public function scopeNotAssessed($query)
+    {
+        return $query->where('status', 'draft')
+            ->where('is_imported', true);
+    }
+
+    public function scopeAssessed($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('status', 'draft');
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
+    public function scopeImported($query)
+    {
+        return $query->where('is_imported', true);
+    }
+
+    public function scopeManual($query)
+    {
+        return $query->where('is_imported', false);
+    }
+
+    public function scopeNeedAssessment($query)
+    {
+        return $query->where('status', 'draft')
+            ->orWhere(function ($q) {
+                $q->where('status', 'submitted');
+            });
     }
 }

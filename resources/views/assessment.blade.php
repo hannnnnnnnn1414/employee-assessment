@@ -44,15 +44,35 @@
                                 @if (request()->has('periode'))
                                     <span class="badge bg-info me-2">Data Difilter</span>
                                 @endif
-                                <div class="btn-group">
+                                <div class="btn-group ms-2">
                                     <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle"
                                         data-bs-toggle="dropdown">
-                                        <i class="ti ti-filter"></i> Filter Periode
+                                        <i class="ti ti-filter"></i> Filter Status
                                     </button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="{{ route('assessment') }}">Semua</a>
+                                        <a class="dropdown-item" href="{{ route('assessment') }}">All Status</a>
                                         <div class="dropdown-divider"></div>
-                                        <h6 class="dropdown-header">Periode</h6>
+                                        <h6 class="dropdown-header">Filter By Status</h6>
+                                        <a class="dropdown-item"
+                                            href="{{ request()->fullUrlWithQuery(['status' => 'draft']) }}">
+                                            <span class="badge bg-warning me-2">●</span> Not Assessed
+                                        </a>
+                                        <a class="dropdown-item"
+                                            href="{{ request()->fullUrlWithQuery(['status' => 'completed']) }}">
+                                            <span class="badge bg-success me-2">●</span> Assessed
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="btn-group ms-2">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                        data-bs-toggle="dropdown">
+                                        <i class="ti ti-filter"></i> Filter Period
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="{{ route('assessment') }}">All</a>
+                                        <div class="dropdown-divider"></div>
+                                        <h6 class="dropdown-header">Period</h6>
                                         @foreach ($periodes as $periode)
                                             <a class="dropdown-item"
                                                 href="{{ request()->fullUrlWithQuery(['periode' => $periode]) }}">
@@ -85,44 +105,54 @@
                                             <th class="text-center">Tanggal</th>
                                             <th class="text-center">Nilai Akhir</th>
                                             <th class="text-center">Nilai Mutu</th>
+                                            <th class="text-center">Status</th>
                                             <th class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse ($assessments as $index => $assessment)
-                                            <tr>
+                                            <tr class="{{ $assessment->status === 'draft' ?: '' }}">
                                                 <td class="text-center">{{ $index + 1 }}</td>
                                                 <td class="text-center">{{ $assessment->npk }}</td>
                                                 <td class="text-center">
                                                     <strong>{{ $assessment->nama }}</strong>
+                                                    @if ($assessment->status === 'draft')
+                                                        <br>
+                                                        <small class="text-muted">Not assessed yet</small>
+                                                    @endif
                                                 </td>
                                                 <td class="text-center">{{ $assessment->jabatan }}</td>
                                                 <td class="text-center">{{ $assessment->dept_seksi }}</td>
                                                 <td class="text-center">{{ $assessment->periode_penilaian }}</td>
                                                 <td class="text-center">{{ $assessment->tanggal_penilaian }}</td>
                                                 <td class="text-center">
-                                                    <span
-                                                        class="badge bg-primary">{{ $assessment->nilai_akhir }}</span>
+                                                    @if ($assessment->status === 'completed')
+                                                        <span
+                                                            class="badge bg-primary">{{ $assessment->nilai_akhir }}</span>
+                                                    @else
+                                                        <span class="badge bg-secondary">-</span>
+                                                    @endif
                                                 </td>
                                                 <td class="text-center">
-                                                    <span
-                                                        class="badge bg-{{ $assessment->nilai_mutu == 'BS' ? 'success' : ($assessment->nilai_mutu == 'B' ? 'info' : ($assessment->nilai_mutu == 'C' ? 'warning' : 'danger')) }}">
-                                                        {{ $assessment->nilai_mutu }}
+                                                    @if ($assessment->status === 'completed')
+                                                        <span
+                                                            class="badge bg-{{ $assessment->nilai_mutu == 'BS' ? 'success' : ($assessment->nilai_mutu == 'B' ? 'info' : ($assessment->nilai_mutu == 'C' ? 'warning' : 'danger')) }}">
+                                                            {{ $assessment->nilai_mutu }}
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-light text-dark">-</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-{{ $assessment->status_color }}">
+                                                        {{ $assessment->status_label }}
+                                                        @if ($assessment->is_imported && $assessment->status === 'draft')
+                                                            <i class="ms-1" title="Imported Data"></i>
+                                                        @endif
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center flex-wrap gap-2">
-                                                        <!-- View -->
-                                                        {{-- <div class="text-center action-item" style="width:50px;">
-                                                            <a href="{{ route('assessment.show', $assessment->id) }}"
-                                                                class="btn p-0 border-0 bg-transparent"
-                                                                title="Lihat Detail">
-                                                                <i class="bi bi-eye fs-4 text-secondary"></i>
-                                                            </a>
-                                                            <div class="small text-muted" style="font-size: 11px;">View
-                                                            </div>
-                                                        </div> --}}
-
                                                         <!-- View -->
                                                         <div class="text-center action-item" style="width:50px;">
                                                             <button type="button"
@@ -139,11 +169,17 @@
                                                         <!-- Edit -->
                                                         <div class="text-center action-item" style="width:50px;">
                                                             <a href="{{ route('assessment.edit', $assessment->id) }}"
-                                                                class="btn p-0 border-0 bg-transparent" title="Edit">
-                                                                <i class="bi bi-pencil fs-4 text-warning"></i>
+                                                                class="btn p-0 border-0 bg-transparent"
+                                                                title="{{ $assessment->status === 'draft' ? 'Beri Nilai' : 'Edit Nilai' }}">
+                                                                @if ($assessment->status === 'draft')
+                                                                    <i
+                                                                        class="bi bi-pencil-square fs-4 text-success"></i>
+                                                                @else
+                                                                    <i class="bi bi-pencil fs-4 text-warning"></i>
+                                                                @endif
                                                             </a>
                                                             <div class="small text-muted" style="font-size: 11px;">
-                                                                Edit/Nilai
+                                                                {{ $assessment->status === 'draft' ? 'Nilai' : 'Edit' }}
                                                             </div>
                                                         </div>
 
@@ -156,15 +192,15 @@
                                                                 title="Hapus">
                                                                 <i class="bi bi-trash fs-4 text-danger"></i>
                                                             </button>
-                                                            <div class="small text-muted" style="font-size: 11px;">Hapus
-                                                            </div>
+                                                            <div class="small text-muted" style="font-size: 11px;">
+                                                                Hapus</div>
                                                         </div>
                                                     </div>
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="10" class="text-center py-4">
+                                                <td colspan="11" class="text-center py-4">
                                                     <i class="bi bi-clipboard"
                                                         style="font-size: 48px; color: #6c757d;"></i>
                                                     <p class="mt-2 text-muted">Belum ada data penilaian.</p>

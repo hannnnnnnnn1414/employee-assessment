@@ -160,6 +160,9 @@ class ImportController extends Controller
             'integritas_loyalitas' => 40,
             'qcc_ss' => 40,
             'mengarahkan_menghargai' => 40,
+            'status' => 'draft',
+            'is_imported' => true,
+
         ];
 
         if ($assessment) {
@@ -194,7 +197,7 @@ class ImportController extends Controller
             return 'Supervisor';
         }
 
-        return 'Staff';
+        return 'non-mgr';
     }
 
     private function determinePeriode(): string
