@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\CtUserHash;
+use App\Models\Hp;
 use App\Models\Otp;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -31,40 +33,53 @@ class LoginController extends Controller
 
         $credentials = $request->only('npk', 'password');
 
-        if (Auth::guard('lembur')->attempt($credentials)) {
+        if (!Auth::guard('lembur')->attempt($credentials)) {
 
-            $user = Auth::guard('lembur')->user();
-
-            Otp::where('user_id', $user->id)->where('is_used', false)->delete();
-
-            $otp = Otp::create([
-                'user_id' => $user->id,
-                'otp_code' => '123456',           
-                'expires_at' => now()->addMinutes(5),
-            ]);
-
-            session([
-                'otp_user_id' => $user->id,
-                'otp_id' => $otp->id,
-                'otp_attempts' => 0,
-                'auth_guard' => 'lembur',           
-            ]);
-
-            return redirect()->route('otp.verify');
+            return redirect()->route('login')->with('error', 'NPK atau password salah');
+            // return back()->withErrors(['npk' => 'NPK atau password salah'])->withInput();
         }
 
-        return back()->withErrors(['npk' => 'NPK atau password salah'])->withInput();
+        $user = Auth::guard('lembur')->user();
+
+        Auth::guard('lembur')->logout();
+
+        $hpRecord = Hp::where('npk', $user->npk)->first();
+
+        if (!$hpRecord) {
+            Auth::guard('lembur')->logout();
+
+            return redirect()->route('login')->with('error', 'NPK tidak memiliki nomor HP terdaftar');
+            // return back()->withErrors(['npk' => 'NPK tidak memiliki nomor HP terdaftar. Hubungi admin.'])->withInput();
+        }
+
+        Otp::where('user_id', $user->id)->where('is_used', false)->delete();
+
+        $otp = Otp::create([
+            'user_id' => $user->id,
+            'otp_code' => '123456',
+            'expires_at' => now()->addMinutes(5),
+        ]);
+
+        session([
+            'pending_user_id' => $user->id,
+            'otp_id' => $otp->id,
+            'otp_attempts' => 0,
+            'auth_guard' => 'lembur',
+        ]);
+
+        return redirect()->route('otp.verify');
+
     }
 
     public function showOtpForm()
     {
-        if (!session('otp_user_id')) {
+        if (!session('pending_user_id')) {
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu');
         }
 
         Log::info('Showing OTP form', [
             'session_id' => session()->getId(),
-            'otp_user_id' => session('otp_user_id')
+            'pending_user_id' => session('pending_user_id')
         ]);
 
         return view('auth.otp-verify');
@@ -75,7 +90,7 @@ class LoginController extends Controller
         Log::info('OTP Verification attempt', [
             'session_id' => session()->getId(),
             'otp_from_request' => $request->otp,
-            'otp_user_id' => session('otp_user_id'),
+            'pending_user_id' => session('pending_user_id'),
             'otp_id' => session('otp_id')
         ]);
 
@@ -83,8 +98,8 @@ class LoginController extends Controller
             'otp' => 'required|string|size:6',
         ]);
 
-        $userId = session('otp_user_id');
-        $otpId = session ('otp_id');
+        $userId = session('pending_user_id');
+        $otpId = session('otp_id');
         $guard = session('auth_guard', 'lembur');
 
         if (!$userId || !$otpId) {
@@ -92,18 +107,18 @@ class LoginController extends Controller
         }
 
         $otp = Otp::where('id', session('otp_id'))
-        ->where('user_id', $userId)
-        ->where('otp_code', $request->otp)
-        ->where('is_used', false)
-        ->where('expires_at', '>', now())
-        ->first();
+            ->where('user_id', $userId)
+            ->where('otp_code', $request->otp)
+            ->where('is_used', false)
+            ->where('expires_at', '>', now())
+            ->first();
 
         if (!$otp) {
             $attempts = session('otp_attempts', 0) + 1;
             session(['otp_attempts' => $attempts]);
 
             if ($attempts >= 3) {
-                session()->forget(['otp_user_id', 'otp_id', 'otp_attempts']);
+                session()->forget(['pending_user_id', 'otp_id', 'otp_attempts']);
                 return redirect()->route('login')->with('error', 'Terlalu banyak percobaan. Silakan login ulang.');
             }
 
@@ -112,9 +127,14 @@ class LoginController extends Controller
 
         $otp->update(['is_used' => true]);
 
-        $user = ($guard === 'lembur')
-        ? \App\Models\CtUserHash::find($userId)
-        : \App\Models\User::find($userId);
+        switch ($guard) {
+            case 'lembur':
+                $user = CtUserHash::find($userId);
+                break;
+            default:
+                $user = User::find($userId);
+                break;
+        }
 
         if (!$user) {
             return redirect()->route('login')->with('error', 'User tidak ditemukan');
@@ -124,7 +144,7 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        session()->forget(['otp_user_id', 'otp_id', 'otp_attempts','auth_guard']);
+        session()->forget(['pending_user_id', 'otp_id', 'otp_attempts', 'auth_guard']);
 
         Log::info('OTP verified successfully', [
             'user_id' => $user->id,
@@ -136,7 +156,7 @@ class LoginController extends Controller
 
     public function resendOtp()
     {
-        $userId = session('otp_user_id');
+        $userId = session('pending_user_id');
 
         if (!$userId) {
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu');
