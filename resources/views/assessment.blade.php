@@ -152,7 +152,7 @@
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <div class="d-flex justify-content-center flex-wrap gap-2">
+                                                    <div class="d-flex justify-content-center flex gap-2">
                                                         <!-- View -->
                                                         <div class="text-center action-item" style="width:50px;">
                                                             <button type="button"

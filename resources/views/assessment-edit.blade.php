@@ -47,7 +47,7 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-md-12 mb-3">
+                                    {{-- <div class="col-md-12 mb-3">
                                         <label for="user_id" class="form-label">Pilih Karyawan *</label>
                                         <select class="form-control" id="user_id" name="user_id" required
                                             onchange="updateEmployeeData()">
@@ -62,7 +62,7 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                    </div>
+                                    </div> --}}
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
@@ -108,23 +108,15 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="periode_penilaian" class="form-label">Periode Penilaian *</label>
-                                        <select class="form-control" id="periode_penilaian" name="periode_penilaian"
-                                            required>
-                                            <option value="">Pilih Periode</option>
-                                            @foreach ($periodes as $periode)
-                                                <option value="{{ $periode }}"
-                                                    {{ old('periode_penilaian', $assessment->periode_penilaian) == $periode ? 'selected' : '' }}>
-                                                    {{ $periode }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                         <input type="text" class="form-control" id="periode_penilaian"
+                                            value="{{ $assessment->periode_penilaian }}" readonly>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="tanggal_penilaian" class="form-label">Tanggal Penilaian *</label>
                                         <input type="date" class="form-control" id="tanggal_penilaian"
                                             name="tanggal_penilaian"
                                             value="{{ old('tanggal_penilaian', $assessment->tanggal_penilaian->format('Y-m-d')) }}"
-                                            required>
+                                            readonly>
                                     </div>
                                 </div>
                             </div>

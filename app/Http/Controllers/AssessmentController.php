@@ -76,11 +76,15 @@ class AssessmentController extends Controller
     public function edit($id)
     {
         $assessment = Assessment::with('user')->findOrFail($id);
+
+        // Ambil semua periode unik dari tabel assessments, urutkan
+        $periodes = Assessment::select('periode_penilaian')
+            ->distinct()
+            ->orderBy('periode_penilaian')
+            ->pluck('periode_penilaian')
+            ->toArray();
+
         $users = User::orderBy('nama')->get();
-        $periodes = [
-            'Periode 1 | Oktober - Maret',
-            'Periode 2 | April - September'
-        ];
 
         return view('assessment-edit', compact('assessment', 'users', 'periodes'));
     }
