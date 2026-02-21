@@ -23,7 +23,7 @@
                         <span class="pc-mtext">Dashboard</span>
                     </a>
                 </li>
-                @if (Auth::user()->dept == 'HR')
+                @if (Auth::guard('lembur')->user()->dept == 'HR')
                     <li class="pc-item">
                         <a href="{{ route('employee') }}" class="pc-link" id="dashboard-link">
                             <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
@@ -37,7 +37,7 @@
                         <span class="pc-mtext">Assessment</span>
                     </a>
                 </li>
-                @if (Auth::user()->dept == 'HR')
+                @if (Auth::guard('lembur')->user()->dept == 'HR')
                     <li class="pc-item">
                         <a href="{{ route('import') }}" class="pc-link" id="dashboard-link">
                             <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
@@ -80,14 +80,14 @@
                     <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#"
                         role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
                         <i class="fas fa-user" style="font-size: 1rem; margin-right: 8px;"></i>
-                        <span>{{ Auth::user()->nama ?? 'Guest' }}</span>
+                        <span>{{ Auth::guard('lembur')->user()->full_name ?? 'Guest' }}</span>
                     </a>
                     <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
                         <div class="dropdown-header">
                             <div class="d-flex mb-1">
                                 <div class="flex-grow-1 ms-3">
-                                    <h6>{{ Auth::user()->nama ?? 'Guest' }}</h6>
-                                    <span>{{ Auth::user()->npk ?? '' }} | {{ Auth::user()->dept ?? '' }}</span>
+                                    <h6>{{ Auth::guard('lembur')->user()->full_name ?? 'Guest' }}</h6>
+                                    <span>{{ Auth::guard('lembur')->user()->npk ?? '' }} | {{ Auth::guard('lembur')->user()->dept ?? '' }}</span>
                                 </div>
                                 <a href="#!" class="pc-head-link bg-transparent"><i
                                         class="ti ti-power text-danger"></i></a>

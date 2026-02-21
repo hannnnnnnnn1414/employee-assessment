@@ -18,15 +18,28 @@
             <div class="row">
                 <!-- [ Statistik Kartu ] start -->
                 <div class="col-md-6 col-xl-3">
-                    <div class="card border border-primary">
+                    <div class="card kpi-card kpi-total">
                         <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-shrink-0">
-                                    <i class="ti ti-clipboard text-primary" style="font-size: 2.5rem;"></i>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="kpi-content">
+                                    <h6 class="text-muted mb-2">Total Penilaian</h6>
+                                    <h3 class="mb-1">{{ number_format($totalAssessments) }}</h3>
+                                    {{-- <h3 class="mb-3"> <span
+                                            class="badge bg-light-primary border border-primary"> {{ number_format($totalAssessments) }}</span></h3> --}}
+
+                                    <div class="kpi-trend mt-2">
+                                        <span class="badge bg-light text-dark">Semua Penilaian</span>
+                                    </div>
                                 </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="mb-1 f-w-400 text-muted">Total Penilaian</h6>
-                                    <h4 class="mb-0">{{ number_format($totalAssessments) }}</h4>
+                                <div class="kpi-icon">
+                                    <div class="icon-wrapper">
+                                        <i class="far fa-clipboard fa-2x text-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-progress mt-3">
+                                <div class="progress" style="height: 4px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 100%"></div>
                                 </div>
                             </div>
                         </div>
@@ -34,15 +47,28 @@
                 </div>
 
                 <div class="col-md-6 col-xl-3">
-                    <div class="card border border-success">
+                    <div class="card kpi-card kpi-total">
                         <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-shrink-0">
-                                    <i class="ti ti-users text-success" style="font-size: 2.5rem;"></i>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="kpi-content">
+                                    <h6 class="text-muted mb-2">Total Penilaian</h6>
+                                    <h3 class="mb-1">{{ number_format($totalEmployees) }}</h3>
+                                    {{-- <h3 class="mb-3"> <span
+                                            class="badge bg-light-primary border border-primary"> {{ number_format($totalAssessments) }}</span></h3> --}}
+
+                                    <div class="kpi-trend mt-2">
+                                        <span class="badge bg-light text-dark">Semua Karyawan</span>
+                                    </div>
                                 </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="mb-1 f-w-400 text-muted">Total Karyawan</h6>
-                                    <h4 class="mb-0">{{ number_format($totalEmployees) }}</h4>
+                                <div class="kpi-icon">
+                                    <div class="icon-wrapper">
+                                        <i class="fa fa-users fa-2x text-success"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-progress mt-3">
+                                <div class="progress" style="height: 4px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
                                 </div>
                             </div>
                         </div>
@@ -50,31 +76,29 @@
                 </div>
 
                 <div class="col-md-6 col-xl-3">
-                    <div class="card border border-info">
+                    <div class="card kpi-card kpi-total">
                         <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-shrink-0">
-                                    <i class="ti ti-chart-bar text-info" style="font-size: 2.5rem;"></i>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="kpi-content">
+                                    <h6 class="text-muted mb-2">Rata Rata Nilai</h6>
+                                    <h3 class="mb-1">{{ number_format($avgNilai) }}</h3>
+                                    {{-- <h3 class="mb-3"> <span
+                                            class="badge bg-light-primary border border-primary"> {{ number_format($totalAssessments) }}</span></h3> --}}
+
+                                    <div class="kpi-trend mt-2">
+                                        <span class="badge text-white">Semua Karyawan</span>
+                                    </div>
                                 </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="mb-1 f-w-400 text-muted">Rata-rata Nilai</h6>
-                                    <h4 class="mb-0">{{ $avgNilai }}</h4>
+                                <div class="kpi-icon">
+                                    <div class="icon-wrapper">
+                                        <i class="fa fa-star fa-2x text-warning"></i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-xl-3">
-                    <div class="card border border-warning">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-shrink-0">
-                                    <i class="ti ti-calendar text-warning" style="font-size: 2.5rem;"></i>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="mb-1 f-w-400 text-muted">Penilaian Terbaru</h6>
-                                    <h4 class="mb-0">{{ $recentAssessments->count() }}</h4>
+                            <div class="kpi-progress mt-3">
+                                <div class="progress" style="height: 4px;">
+                                    <div class="progress-bar bg-warning" role="progressbar"
+                                        style="width: {{ min($avgNilai, 100) }}%;"></div>
                                 </div>
                             </div>
                         </div>
@@ -87,7 +111,7 @@
             <div class="row mt-4">
                 <!-- Grafik Bulanan -->
                 <div class="col-md-12 col-xl-8">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-0">
                         <h5 class="mb-0">Statistik Penilaian {{ date('Y') }}</h5>
                         <ul class="nav nav-pills justify-content-end mb-0" id="chart-tab-tab" role="tablist">
                             <li class="nav-item" role="presentation">
