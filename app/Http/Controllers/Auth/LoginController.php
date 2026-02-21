@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
-class OtpController extends Controller
+class LoginController extends Controller
 {
     public function showLoginForm()
     {
-        if (Auth::check()) {
+        if (Auth::guard('lembur')->check()) {
             return redirect()->route('dashboard');
         }
 
@@ -29,42 +29,31 @@ class OtpController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('npk', $request->npk)->first();
+        $credentials = $request->only('npk', 'password');
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return back()->withErrors(['npk' => 'NPK atau password salah'])->withInput();
+        if (Auth::guard('lembur')->attempt($credentials)) {
+
+            $user = Auth::guard('lembur')->user();
+
+            Otp::where('user_id', $user->id)->where('is_used', false)->delete();
+
+            $otp = Otp::create([
+                'user_id' => $user->id,
+                'otp_code' => '123456',           
+                'expires_at' => now()->addMinutes(5),
+            ]);
+
+            session([
+                'otp_user_id' => $user->id,
+                'otp_id' => $otp->id,
+                'otp_attempts' => 0,
+                'auth_guard' => 'lembur',           
+            ]);
+
+            return redirect()->route('otp.verify');
         }
 
-        if (config('session.driver') === 'database') {
-            DB::table('sessions')
-                ->where('user_id', $user->id)
-                ->delete();
-        }
-
-        Otp::where('user_id', $user->id)
-            ->where('is_used', false)
-            ->delete();
-
-        $otp = Otp::create([
-            'user_id' => $user->id,
-            'otp_code' => '123456',
-            'expires_at' => now()->addMinutes(5),
-        ]);
-
-        session([
-            'otp_user_id' => $user->id,
-            'otp_id' => $otp->id,
-            'otp_attempts' => 0
-        ]);
-
-        session()->save();
-
-        Log::info('Login success, redirecting to OTP', [
-            'user_id' => $user->id,
-            'session_id' => session()->getId()
-        ]);
-
-        return redirect()->route('otp.verify');
+        return back()->withErrors(['npk' => 'NPK atau password salah'])->withInput();
     }
 
     public function showOtpForm()
@@ -95,18 +84,19 @@ class OtpController extends Controller
         ]);
 
         $userId = session('otp_user_id');
-        $otpId = session('otp_id');
+        $otpId = session ('otp_id');
+        $guard = session('auth_guard', 'lembur');
 
         if (!$userId || !$otpId) {
             return redirect()->route('login')->with('error', 'Sesi telah berakhir');
         }
 
-        $otp = Otp::where('id', $otpId)
-            ->where('user_id', $userId)
-            ->where('otp_code', $request->otp)
-            ->where('is_used', false)
-            ->where('expires_at', '>', now())
-            ->first();
+        $otp = Otp::where('id', session('otp_id'))
+        ->where('user_id', $userId)
+        ->where('otp_code', $request->otp)
+        ->where('is_used', false)
+        ->where('expires_at', '>', now())
+        ->first();
 
         if (!$otp) {
             $attempts = session('otp_attempts', 0) + 1;
@@ -122,13 +112,19 @@ class OtpController extends Controller
 
         $otp->update(['is_used' => true]);
 
-        $user = User::find($userId);
+        $user = ($guard === 'lembur')
+        ? \App\Models\CtUserHash::find($userId)
+        : \App\Models\User::find($userId);
 
-        session()->forget(['otp_user_id', 'otp_id', 'otp_attempts']);
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User tidak ditemukan');
+        }
 
-        Auth::login($user);
+        Auth::guard($guard)->login($user);
 
         $request->session()->regenerate();
+
+        session()->forget(['otp_user_id', 'otp_id', 'otp_attempts','auth_guard']);
 
         Log::info('OTP verified successfully', [
             'user_id' => $user->id,

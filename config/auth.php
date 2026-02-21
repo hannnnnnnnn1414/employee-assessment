@@ -40,6 +40,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'lembur' => [                        
+            'driver' => 'session',
+            'provider' => 'ct_users_hash',
+        ],
     ],
 
     /*
@@ -63,6 +68,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+
+        'ct_users_hash' => [                  
+            'driver' => 'eloquent',
+            'model' => App\Models\CtUserHash::class,
         ],
 
         // 'users' => [
