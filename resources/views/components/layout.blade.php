@@ -23,7 +23,7 @@
                         <span class="pc-mtext">Dashboard</span>
                     </a>
                 </li>
-                @if (Auth::guard('lembur')->user()->dept == 'HR')
+                @if (Auth::guard('lembur')->user()->dept == 'HRD')
                     <li class="pc-item">
                         <a href="{{ route('employee') }}" class="pc-link" id="dashboard-link">
                             <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
@@ -37,7 +37,7 @@
                         <span class="pc-mtext">Assessment</span>
                     </a>
                 </li>
-                @if (Auth::guard('lembur')->user()->dept == 'HR')
+                @if (Auth::guard('lembur')->user()->dept == 'HRD')
                     <li class="pc-item">
                         <a href="{{ route('import') }}" class="pc-link" id="dashboard-link">
                             <span class="pc-micon"><i class="ti ti-dashboard"></i></span>

@@ -306,7 +306,7 @@
                     </div>
 
                     <!-- Departemen Distribution (HR only) -->
-                    @if ($userDept === 'HR' && !empty($departmentChartData))
+                    @if ($userDept === 'HRD' && !empty($departmentChartData))
                         <div class="mt-4">
                             <h5 class="mb-3">Distribusi per Departemen</h5>
                             <div class="card">
@@ -419,7 +419,7 @@
         @endif
 
         // Department Chart (HR only)
-        @if ($userDept === 'HR' && !empty($departmentChartData))
+        @if ($userDept === 'HRD' && !empty($departmentChartData))
             new Chart(document.getElementById("departmentChart"), {
                 type: "pie",
                 data: {

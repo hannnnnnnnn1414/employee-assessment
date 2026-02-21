@@ -199,7 +199,7 @@ class AssessmentController extends Controller
     {
         $query = Assessment::with('user');
 
-        if ($user->dept !== 'HR') {
+        if ($user->dept !== 'HRD') {
             $query->whereHas('user', function ($query) use ($user) {
                 $query->where('dept', $user->dept);
             });
@@ -228,7 +228,7 @@ class AssessmentController extends Controller
     {
         $query = User::query();
 
-        if ($user->dept !== 'HR') {
+        if ($user->dept !== 'HRD') {
             $query->where('dept', $user->dept);
         }
 

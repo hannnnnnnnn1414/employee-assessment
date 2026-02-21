@@ -14,7 +14,7 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         // Stats berdasarkan role user
-        if ($user->dept === 'HR') {
+        if ($user->dept === 'HRD') {
             $totalAssessments = Assessment::count();
             $totalEmployees = User::count();
             $avgNilai = Assessment::avg('nilai_akhir') ?? 0;
@@ -41,8 +41,8 @@ class DashboardController extends Controller
         // Monthly chart data
         $monthlyData = $this->getMonthlyAssessmentData($user);
 
-        // Department distribution (untuk HR)
-        $departmentData = $user->dept === 'HR' ? $this->getDepartmentDistribution() : [];
+        // Department distribution (untuk HRD)
+        $departmentData = $user->dept === 'HRD' ? $this->getDepartmentDistribution() : [];
 
         // Recent activities
         $recentActivities = $this->getRecentActivities($user);
@@ -81,7 +81,7 @@ class DashboardController extends Controller
             $query = Assessment::whereYear('tanggal_penilaian', $currentYear)
                 ->whereMonth('tanggal_penilaian', $month);
 
-            if ($user->dept !== 'HR') {
+            if ($user->dept !== 'HRD') {
                 $query->whereHas('user', function ($query) use ($user) {
                     $query->where('dept', $user->dept);
                 });
@@ -114,7 +114,7 @@ class DashboardController extends Controller
 
             $query = Assessment::whereBetween('tanggal_penilaian', [$startOfWeek, $endOfWeek]);
 
-            if ($user->dept !== 'HR') {
+            if ($user->dept !== 'HRD') {
                 $query->whereHas('user', function ($query) use ($user) {
                     $query->where('dept', $user->dept);
                 });
@@ -183,7 +183,7 @@ class DashboardController extends Controller
         foreach ($mutuLabels as $mutu) {
             $query = Assessment::where('nilai_mutu', $mutu);
 
-            if ($user->dept !== 'HR') {
+            if ($user->dept !== 'HRD') {
                 $query->whereHas('user', function ($query) use ($user) {
                     $query->where('dept', $user->dept);
                 });
@@ -219,7 +219,7 @@ class DashboardController extends Controller
     {
         $query = Assessment::with('user')->latest('updated_at')->limit(10);
 
-        if ($user->dept !== 'HR') {
+        if ($user->dept !== 'HRD') {
             $query->whereHas('user', function ($query) use ($user) {
                 $query->where('dept', $user->dept);
             });
@@ -234,7 +234,7 @@ class DashboardController extends Controller
             ->orderBy('nilai_akhir', 'desc')
             ->limit(5);
 
-        if ($user->dept !== 'HR') {
+        if ($user->dept !== 'HRD') {
             $query->whereHas('user', function ($query) use ($user) {
                 $query->where('dept', $user->dept);
             });
@@ -251,7 +251,7 @@ class DashboardController extends Controller
             ->orderBy('nilai_akhir', 'asc')
             ->limit(5);
 
-        if ($user->dept !== 'HR') {
+        if ($user->dept !== 'HRD') {
             $query->whereHas('user', function ($query) use ($user) {
                 $query->where('dept', $user->dept);
             });

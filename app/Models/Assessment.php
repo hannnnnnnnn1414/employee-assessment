@@ -151,7 +151,7 @@ class Assessment extends Model
 
     public function scopeFilterByUserDepartment($query, $user)
     {
-        if ($user->role !== 'HR') {
+        if ($user->role !== 'HRD') {
             $query->whereHas('user', function ($query) use ($user) {
                 $query->where('dept', $user->dept);
             });
