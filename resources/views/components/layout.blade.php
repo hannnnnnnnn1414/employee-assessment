@@ -19,28 +19,28 @@
             <ul class="pc-navbar" style="padding-left: 0; margin-left: 0;">
                 <li class="pc-item">
                     <a href="{{ route('dashboard') }}" class="pc-link" id="dashboard-link">
-                        <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+                        <span class="bi bi-kanban pc-micon"><i class="ti ti-dashboard"></i></span>
                         <span class="pc-mtext">Dashboard</span>
                     </a>
                 </li>
                 @if (Auth::guard('lembur')->user()->dept == 'HRD')
                     <li class="pc-item">
                         <a href="{{ route('employee') }}" class="pc-link" id="dashboard-link">
-                            <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+                            <span class="bi bi-person-fill pc-micon"><i class="ti ti-dashboard"></i></span>
                             <span class="pc-mtext">Employee</span>
                         </a>
                     </li>
                 @endif
                 <li class="pc-item">
                     <a href="{{ route('assessment') }}" class="pc-link" id="dashboard-link">
-                        <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+                        <span class="bi bi-card-list pc-micon"><i class="ti ti-dashboard"></i></span>
                         <span class="pc-mtext">Assessment</span>
                     </a>
                 </li>
                 @if (Auth::guard('lembur')->user()->dept == 'HRD')
                     <li class="pc-item">
                         <a href="{{ route('import') }}" class="pc-link" id="dashboard-link">
-                            <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+                            <span class="bi bi-upload pc-micon"><i class="ti ti-dashboard"></i></span>
                             <span class="pc-mtext">Import Data</span>
                         </a>
                     </li>
@@ -63,10 +63,10 @@
                         <div class="page-header-title">
                             <h5 class="m-b-10" id="page-title">Employee Assessment System</h5>
                         </div>
-                        <ul class="breadcrumb" id="breadcrumb">
+                        {{-- <ul class="breadcrumb" id="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
-                            <li class="breadcrumb-item" id="current-page">Documents</li>
-                        </ul>
+                            <li class="breadcrumb-item" id="current-page">Dashboard</li>
+                        </ul> --}}
                     </div>
                 </div>
             </div>
