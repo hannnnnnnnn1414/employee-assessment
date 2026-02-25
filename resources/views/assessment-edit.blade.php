@@ -108,7 +108,7 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="periode_penilaian" class="form-label">Periode Penilaian *</label>
-                                         <input type="text" class="form-control" id="periode_penilaian"
+                                        <input type="text" class="form-control" id="periode_penilaian"
                                             value="{{ $assessment->periode_penilaian }}" readonly>
                                     </div>
                                     <div class="col-md-6 mb-3">
@@ -341,7 +341,7 @@
                                         $demeritItems = [
                                             [
                                                 'name' => 'ijin',
-                                                'label' => 'Ijin',
+                                                'label' => 'Ijin (- Disiplin)',
                                                 'points' => 10,
                                                 'value' => $assessment->ijin ?? 0,
                                             ],
@@ -755,8 +755,13 @@
 
             if (!isValid) {
                 e.preventDefault();
+                e.stopPropagation();
                 alert('Harap lengkapi semua field yang wajib diisi!');
+                return false;
             }
+
+            this.querySelector('button[type="submit"]').innerHTML = '<i class="ti ti-loader"></i> Menyimpan...';
+            this.querySelector('button[type="submit"]').disabled = true;
         });
     </script>
 </body>
