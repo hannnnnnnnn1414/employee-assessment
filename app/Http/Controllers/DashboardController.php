@@ -13,7 +13,6 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Stats berdasarkan role user
         if ($user->dept === 'HRD') {
             $totalAssessments = Assessment::count();
             $totalEmployees = User::count();
@@ -35,39 +34,30 @@ class DashboardController extends Controller
             })->with('user')->latest()->take(5)->get();
         }
 
-        // Distribution by Nilai Mutu
         $nilaiMutuDistribution = $this->getNilaiMutuDistribution($user);
 
-        // Monthly chart data
         $monthlyData = $this->getMonthlyAssessmentData($user);
 
-        // Department distribution (untuk HRD)
         $departmentData = $user->dept === 'HRD' ? $this->getDepartmentDistribution() : [];
 
-        // Recent activities
         $recentActivities = $this->getRecentActivities($user);
 
         return view('dashboard', [
-            // Stats cards
             'totalAssessments' => $totalAssessments,
             'totalEmployees' => $totalEmployees,
             'avgNilai' => round($avgNilai, 2),
             'recentAssessments' => $recentAssessments,
 
-            // Distribution by nilai mutu
             'nilaiMutuDistribution' => $nilaiMutuDistribution,
 
-            // Chart data
             'monthlyChartData' => $monthlyData,
             'weeklyChartData' => $this->getWeeklyAssessmentData($user),
             'departmentChartData' => $departmentData,
 
-            // Additional data
             'recentActivities' => $recentActivities,
             'topPerformers' => $this->getTopPerformers($user),
             'needImprovement' => $this->getNeedImprovement($user),
 
-            // User info
             'userDept' => $user->dept,
         ]);
     }
@@ -103,7 +93,6 @@ class DashboardController extends Controller
         $weeks = [];
         $data = [];
 
-        // Get weeks in current month
         $date = Carbon::create($currentYear, $currentMonth, 1);
         $endDate = $date->copy()->endOfMonth();
 
@@ -171,11 +160,11 @@ class DashboardController extends Controller
     {
         $mutuLabels = ['BS', 'B', 'C', 'K', 'KS'];
         $mutuColors = [
-            'BS' => '#198754', // Green
-            'B'  => '#0dcaf0', // Blue
-            'C'  => '#fd7e14', // Orange
-            'K'  => '#ffc107', // Yellow
-            'KS' => '#dc3545', // Red
+            'BS' => '#198754', 
+            'B'  => '#0dcaf0', 
+            'C'  => '#fd7e14', 
+            'K'  => '#ffc107', 
+            'KS' => '#dc3545', 
         ];
 
         $data = [];

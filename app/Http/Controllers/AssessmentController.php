@@ -77,7 +77,6 @@ class AssessmentController extends Controller
     {
         $assessment = Assessment::with('user')->findOrFail($id);
 
-        // Ambil semua periode unik dari tabel assessments, urutkan
         $periodes = Assessment::select('periode_penilaian')
             ->distinct()
             ->orderBy('periode_penilaian')
@@ -93,10 +92,7 @@ class AssessmentController extends Controller
     {
         $assessment = Assessment::findOrFail($id);
 
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'periode_penilaian' => 'required|string',
-            'tanggal_penilaian' => 'required|date',
+        $rules = [
             'kualitas' => 'required|numeric|min:40|max:100',
             'kuantitas' => 'required|numeric|min:40|max:100',
             'kerjasama' => 'required|numeric|min:40|max:100',
@@ -115,26 +111,25 @@ class AssessmentController extends Controller
             'kelemahan' => 'nullable|string|max:500',
             'yang_menilai' => 'nullable|string|max:100',
             'atasan_yang_menilai' => 'nullable|string|max:100',
-        ]);
+        ];
 
-        $user = User::findOrFail($validated['user_id']);
+        $validated = $request->validate($rules);
+
+        $user = User::findOrFail($assessment->user_id);
+
         $jabatanType = $this->getJabatanType($user->jabatan);
         $bobot = $this->getBobot($user->golongan, $jabatanType);
 
         $calculations = $this->calculateAllValues($validated, $bobot);
 
-        $assessment->update(array_merge([
-            'user_id' => $validated['user_id'],
-            'periode_penilaian' => $validated['periode_penilaian'],
-            'tanggal_penilaian' => $validated['tanggal_penilaian'],
-            'nama' => $user->nama,
-            'jabatan' => $user->jabatan,
-            'dept_seksi' => $user->dept,
-            'npk' => $user->npk,
-            'golongan' => $user->golongan,
-            'status' => 'completed',
+        $assessment->update(array_merge($calculations, [
+            'kekuatan' => $validated['kekuatan'] ?? null,
+            'kelemahan' => $validated['kelemahan'] ?? null,
+            'yang_menilai' => $validated['yang_menilai'] ?? null,
+            'atasan_yang_menilai' => $validated['atasan_yang_menilai'] ?? null,
+            'status' => 'completed', 
             'submitted_at' => now(),
-        ], $calculations));
+        ]));
 
         return redirect()->route('assessment')
             ->with('success', 'Penilaian karyawan berhasil diperbarui!');
