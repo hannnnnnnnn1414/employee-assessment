@@ -46,8 +46,7 @@ class LoginController extends Controller
         $hpRecord = Hp::where('npk', $user->npk)->first();
 
         if (!$hpRecord) {
-            Auth::guard('lembur')->logout();
-
+            // Auth::guard('lembur')->logout();
             return redirect()->route('login')->with('error', 'NPK tidak memiliki nomor HP terdaftar');
             // return back()->withErrors(['npk' => 'NPK tidak memiliki nomor HP terdaftar. Hubungi admin.'])->withInput();
         }
