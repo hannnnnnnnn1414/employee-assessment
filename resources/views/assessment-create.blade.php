@@ -78,8 +78,8 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
-                                        <label for="dept_seksi" class="form-label">Dept / Seksi</label>
-                                        <input type="text" class="form-control" id="dept_seksi" readonly>
+                                        <label for="dept" class="form-label">Dept / Seksi</label>
+                                        <input type="text" class="form-control" id="dept" readonly>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="golongan" class="form-label">Golongan</label>
@@ -646,7 +646,7 @@
             if (option.value) {
                 document.getElementById('npk').value = option.getAttribute('data-npk') || '';
                 document.getElementById('nama').value = option.getAttribute('data-nama') || '';
-                document.getElementById('dept_seksi').value = option.getAttribute('data-dept') || '';
+                document.getElementById('dept').value = option.getAttribute('data-dept') || '';
                 document.getElementById('jabatan').value = option.getAttribute('data-jabatan') || '';
 
                 const golonganAngka = option.getAttribute('data-golongan') || '';

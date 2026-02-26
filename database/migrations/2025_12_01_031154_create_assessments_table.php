@@ -16,7 +16,9 @@ return new class extends Migration
 
             $table->string('nama');
             $table->string('jabatan');
-            $table->string('dept_seksi');
+            $table->string('dept');
+            $table->string('seksi');
+            $table->string('sub_seksi');
             $table->string('npk');
             $table->string('golongan');
 

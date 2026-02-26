@@ -38,6 +38,8 @@ class EmployeeController extends Controller
             'email' => $email,
             'password' => Hash::make($request->password),
             'dept' => $request->dept,
+            'seksi' => $request->seksi,
+            'sub_seksi' => $request->sub_seksi,
             'jabatan' => $request->jabatan,
             'golongan' => $request->golongan,
         ]);
@@ -58,6 +60,8 @@ class EmployeeController extends Controller
             'npk' => $request->npk,
             'nama' => $request->nama,
             'dept' => $request->dept,
+            'seksi' => $request->seksi,
+            'sub_seksi' => $request->sub_seksi,
             'jabatan' => $request->jabatan,
             'golongan' => $request->golongan,
         ]);

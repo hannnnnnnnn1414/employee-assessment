@@ -19,29 +19,14 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ImportController extends Controller
 {
-    private function determinePeriodeFromExcel($periodeCell)
+    private function getPeriode1(): string
     {
-        $periodeCell = $this->cleanValue($periodeCell);
+        return 'periode 1';
+    }
 
-        if (empty($periodeCell)) {
-            return $this->determinePeriode();
-        }
-
-        if (str_contains($periodeCell, 'Periode 1')) {
-            $tahun = date('Y');
-            $bulan = date('n');
-
-            return $bulan >= 10
-                ? "Periode 1 | Oktober {$tahun} - Maret " . ($tahun + 1)
-                : "Periode 1 | Oktober " . ($tahun - 1) . " - Maret {$tahun}";
-        }
-
-        if (str_contains($periodeCell, 'Periode 2')) {
-            $tahun = date('Y');
-            return "Periode 2 | April {$tahun} - September {$tahun}";
-        }
-
-        return $this->determinePeriode();
+    private function getPeriode2(): string
+    {
+        return "Periode 2";
     }
 
     public function index()
@@ -83,7 +68,7 @@ class ImportController extends Controller
         for ($i = 1; $i < count($rows); $i++) {
             $row = $rows[$i];
 
-            if (empty($row[2]) || empty($row[3])) {
+            if (empty($row[1]) || empty($row[2])) {
                 continue;
             }
 
@@ -111,8 +96,8 @@ class ImportController extends Controller
 
     private function prepareUserData(array $row): array
     {
-        $npk = $this->cleanValue($row[2], true);
-        $nama = $this->cleanValue($row[3]);
+        $npk = $this->cleanValue($row[1], true);
+        $nama = $this->cleanValue($row[2]);
         $email = strtolower(str_replace(' ', '.', trim($nama))) . '@gmail.com';
 
         return [
@@ -120,18 +105,55 @@ class ImportController extends Controller
             'nama' => $nama,
             'email' => $email,
             'password' => Hash::make('admin'),
-            'golongan' => $this->cleanValue($row[4]),
-            'dept' => $this->cleanValue($row[5]),
+            'golongan' => $this->cleanValue($row[6]),
+            'dept' => $this->cleanValue($row[3]),
             'jabatan' => $this->determineJabatan(
-                $this->cleanValue($row[4]),
-                $this->cleanValue($row[5])
+                $this->cleanValue($row[6]),
+                $this->cleanValue($row[3])
             ),
+            'seksi' => $this->cleanValue($row[4] ?? ''),
+            'sub_seksi' => $this->cleanValue($row[5] ?? ''),
         ];
     }
 
     private function processAssessmentData(User $user, array $row)
     {
-        $periode = $this->determinePeriodeFromExcel($row[1] ?? '');
+        for ($i = 12; $i <= 16; $i++) {
+            if ((int) $this->cleanValue($row[$i] ?? 0, false, true) > 0) {
+                $hasP1 = true;
+                break;
+            }
+        }
+
+        $hasP2 = false;
+        for ($i = 17; $i <= 21; $i++) {
+            if ((int) $this->cleanValue($row[$i] ?? 0, false, true) > 0) {
+                $hasP2 = true;
+                break;
+            }
+        }
+
+        if ($hasP1) {
+            $this->processOnePeriod($user, $row, $this->getPeriode1(), 12, 13, 14, 15, 16);
+        }
+
+        if ($hasP2) {
+            $this->processOnePeriod($user, $row, $this->getPeriode2(), 17, 18, 19, 20, 21);
+        }
+
+    }
+
+    private function processOnePeriod(User $user, array $row, string $periode, int $sdIdx, int $mstIdx, int $sp1Idx, int $sp2Idx, int $sp3Idx)
+    {
+        $ijin = (int) $this->cleanValue($row[$sdIdx] ?? 0, false, true);
+        $mangkir = (int) $this->cleanValue($row[$mstIdx] ?? 0, false, true);
+        $sp1 = (int) $this->cleanValue($row[$sp1Idx] ?? 0, false, true);
+        $sp2 = (int) $this->cleanValue($row[$sp2Idx] ?? 0, false, true);
+        $sp3 = (int) $this->cleanValue($row[$sp3Idx] ?? 0, false, true);
+
+        if ($ijin === 0 && $mangkir === 0 && $sp1 === 0 && $sp2 === 0 && $sp3 === 0) {
+            return;
+        }
 
         $assessment = Assessment::where('user_id', $user->id)
             ->where('periode_penilaian', $periode)
@@ -143,14 +165,16 @@ class ImportController extends Controller
             'tanggal_penilaian' => now(),
             'nama' => $user->nama,
             'jabatan' => $user->jabatan,
-            'dept_seksi' => $user->dept,
+            'dept' => $user->dept,
+            'seksi' => $this->cleanValue($row[4] ?? ''),
+            'sub_seksi' => $this->cleanValue($row[5] ?? ''),
             'npk' => $user->npk,
             'golongan' => $user->golongan,
-            'ijin' => (int)$this->cleanValue($row[8] ?? 0, false, true),
-            'mangkir' => (int)$this->cleanValue($row[9] ?? 0, false, true),
-            'sp1' => (int)$this->cleanValue($row[10] ?? 0, false, true),
-            'sp2' => (int)$this->cleanValue($row[11] ?? 0, false, true),
-            'sp3' => (int)$this->cleanValue($row[12] ?? 0, false, true),
+            'ijin' => $ijin,
+            'mangkir' => $mangkir,
+            'sp1' => $sp1,
+            'sp2' => $sp2,
+            'sp3' => $sp3,
             'kualitas' => 40,
             'kuantitas' => 40,
             'kerjasama' => 40,
@@ -162,7 +186,6 @@ class ImportController extends Controller
             'mengarahkan_menghargai' => 40,
             'status' => 'draft',
             'is_imported' => true,
-
         ];
 
         if ($assessment) {
@@ -198,16 +221,6 @@ class ImportController extends Controller
         }
 
         return 'non-mgr';
-    }
-
-    private function determinePeriode(): string
-    {
-        $bulan = date('n');
-        $tahun = date('Y');
-
-        return ($bulan >= 4 && $bulan <= 9)
-            ? "Periode 2 | April - September {$tahun}"
-            : "Periode 1 | Oktober " . ($tahun - 1) . " - Maret {$tahun}";
     }
 
     private function calculateAssessmentValues(Assessment $assessment)
@@ -298,8 +311,8 @@ class ImportController extends Controller
             $numericValue = str_replace(',', '.', $numericValue);
 
             return strpos($numericValue, '.') !== false
-                ? (float)$numericValue
-                : (int)$numericValue;
+                ? (float) $numericValue
+                : (int) $numericValue;
         }
 
         return $value;
@@ -311,21 +324,47 @@ class ImportController extends Controller
         $nextYear = $currentYear + 1;
 
         $data = [
-            ['NO', 'PERIODE', 'NPK', 'NAMA', 'GOL', 'DEPT', 'NILAI', 'GRADE', 'SD + I', 'M+ST', 'SP I', 'SP II', 'SP III', 'LATE']
+            [
+                'NO',
+                'NPK',
+                'NAMA',
+                'DEPARTEMEN',
+                'SEKSI',
+                'SUB SEKSI',
+                'GRADE',
+                'TGL. MASUK',
+                'MASA KERJA',
+                'JENIS KELAMIN',
+                'TGL. LAHIR',
+                'USIA',
+                'SD + I P1',
+                'M + ST P1',
+                'SP I P1',
+                'SP II P1',
+                'SP III P1',
+                'SD + I P2',
+                'M + ST P2',
+                'SP I P2',
+                'SP II P2',
+                'SP III P2',
+                'SD + I AKUM',
+                'M + ST AKUM',
+                'SP I-III AKUM',
+                'SD + I AKUM2',
+                'M + ST AKUM2',
+                'SP I-III AKUM2'
+            ]
         ];
 
         $filename = 'template_import_penilaian_' . date('Ymd_His') . '.xlsx';
 
-        return Excel::download(new class($data, $currentYear, $nextYear) implements FromArray, \Maatwebsite\Excel\Concerns\WithEvents {
+        return Excel::download(
+            new class ($data) implements FromArray, \Maatwebsite\Excel\Concerns\WithEvents {
             private $data;
-            private $currentYear;
-            private $nextYear;
 
-            public function __construct($data, $currentYear, $nextYear)
+            public function __construct($data)
             {
                 $this->data = $data;
-                $this->currentYear = $currentYear;
-                $this->nextYear = $nextYear;
             }
 
             public function array(): array
@@ -339,88 +378,116 @@ class ImportController extends Controller
                     \Maatwebsite\Excel\Events\AfterSheet::class => function (\Maatwebsite\Excel\Events\AfterSheet $event) {
                         $sheet = $event->sheet->getDelegate();
 
-                        $sheet->getColumnDimension('A')->setWidth(8);
-                        $sheet->getColumnDimension('B')->setWidth(30);
-                        $sheet->getColumnDimension('C')->setWidth(12);
+                        $sheet->getColumnDimension('A')->setWidth(6);
+                        $sheet->getColumnDimension('B')->setWidth(12);
+                        $sheet->getColumnDimension('C')->setWidth(25);
                         $sheet->getColumnDimension('D')->setWidth(25);
-                        $sheet->getColumnDimension('E')->setWidth(8);
-                        $sheet->getColumnDimension('F')->setWidth(20);
-                        $sheet->getColumnDimension('G')->setWidth(10);
-                        $sheet->getColumnDimension('H')->setWidth(10);
-                        $sheet->getColumnDimension('I')->setWidth(10);
-                        $sheet->getColumnDimension('J')->setWidth(10);
-                        $sheet->getColumnDimension('K')->setWidth(8);
+                        $sheet->getColumnDimension('E')->setWidth(20);
+                        $sheet->getColumnDimension('F')->setWidth(25);
+                        $sheet->getColumnDimension('G')->setWidth(8);
+                        $sheet->getColumnDimension('H')->setWidth(15);
+                        $sheet->getColumnDimension('I')->setWidth(12);
+                        $sheet->getColumnDimension('J')->setWidth(12);
+                        $sheet->getColumnDimension('K')->setWidth(15);
                         $sheet->getColumnDimension('L')->setWidth(8);
-                        $sheet->getColumnDimension('M')->setWidth(8);
+
+                        $sheet->getColumnDimension('M')->setWidth(10);
                         $sheet->getColumnDimension('N')->setWidth(10);
+                        $sheet->getColumnDimension('O')->setWidth(8);
+                        $sheet->getColumnDimension('P')->setWidth(8);
+                        $sheet->getColumnDimension('Q')->setWidth(8);
+
+                        $sheet->getColumnDimension('R')->setWidth(10);
+                        $sheet->getColumnDimension('S')->setWidth(10);
+                        $sheet->getColumnDimension('T')->setWidth(8);
+                        $sheet->getColumnDimension('U')->setWidth(8);
+                        $sheet->getColumnDimension('V')->setWidth(8);
+
+                        $sheet->getColumnDimension('W')->setWidth(12);
+                        $sheet->getColumnDimension('X')->setWidth(12);
+                        $sheet->getColumnDimension('Y')->setWidth(12);
+                        $sheet->getColumnDimension('Z')->setWidth(12);
+                        $sheet->getColumnDimension('AA')->setWidth(12);
+                        $sheet->getColumnDimension('AB')->setWidth(12);
 
                         $headerStyle = [
-                            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                            'fill' => [
-                                'fillType' => Fill::FILL_SOLID,
-                                'startColor' => ['rgb' => '4472C4']
+                        'font' => ['bold' => true, 'color' => ['rgb' => '212529']],
+                        'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => 'ffffff']
                             ],
-                            'alignment' => [
-                                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-                                'wrapText' => true
+                        'alignment' => [
+                            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                            'wrapText' => true
                             ],
-                            'borders' => [
-                                'allBorders' => [
-                                    'borderStyle' => Border::BORDER_THIN,
-                                    'color' => ['rgb' => '000000']
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                                'color' => ['rgb' => '000000']
                                 ]
                             ]
                         ];
 
-                        $event->sheet->getStyle('A1:N1')->applyFromArray($headerStyle);
+                        $event->sheet->getStyle('A1:AB1')->applyFromArray($headerStyle);
 
-                        $validation = $sheet->getDataValidation('B2:B1000');
-                        $validation->setType(DataValidation::TYPE_LIST);
-                        $validation->setErrorStyle(DataValidation::STYLE_INFORMATION);
-                        $validation->setAllowBlank(false);
-                        $validation->setShowInputMessage(true);
-                        $validation->setShowErrorMessage(true);
-                        $validation->setShowDropDown(true);
-                        $validation->setErrorTitle('Input error');
-                        $validation->setError('Value is not in list.');
-                        $validation->setPromptTitle('Pilih Periode');
-                        $validation->setPrompt('Silakan pilih periode dari dropdown.');
-
-                        $periodeOptions = [
-                            "Periode 1 | Okt {$this->currentYear} - Mar {$this->nextYear}",
-                            "Periode 2 | Apr {$this->currentYear} - Sep {$this->currentYear}"
+                        $periode1HeaderStyle = [
+                        'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => 'BDD7EE']
+                            ],
+                        'font' => ['bold' => true, 'color' => ['rgb' => '000000']],
                         ];
+                        $event->sheet->getStyle('M1:Q1')->applyFromArray($periode1HeaderStyle);
 
-                        $validation->setFormula1('"' . implode(',', $periodeOptions) . '"');
+                        $periode2HeaderStyle = [
+                        'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => 'E2F0D9']
+                            ],
+                        'font' => ['bold' => true, 'color' => ['rgb' => '000000']],
+                        ];
+                        $event->sheet->getStyle('R1:V1')->applyFromArray($periode2HeaderStyle);
+
+                        $akumulasiHeaderStyle = [
+                        'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => 'EDEDED']
+                            ],
+                        'font' => ['bold' => true, 'color' => ['rgb' => '000000']],
+                        ];
+                        $event->sheet->getStyle('W1:AB1')->applyFromArray($akumulasiHeaderStyle);
 
                         $sheet->setCellValue('A2', '1');
-                        $sheet->setCellValue('I2', '0');
-                        $sheet->setCellValue('J2', '0');
-                        $sheet->setCellValue('K2', '0');
-                        $sheet->setCellValue('L2', '0');
                         $sheet->setCellValue('M2', '0');
                         $sheet->setCellValue('N2', '0');
+                        $sheet->setCellValue('O2', '0');
+                        $sheet->setCellValue('P2', '0');
+                        $sheet->setCellValue('Q2', '0');
+                        $sheet->setCellValue('R2', '0');
+                        $sheet->setCellValue('S2', '0');
+                        $sheet->setCellValue('T2', '0');
+                        $sheet->setCellValue('U2', '0');
+                        $sheet->setCellValue('V2', '0');
 
                         $dataRowStyle = [
-                            'borders' => [
-                                'allBorders' => [
-                                    'borderStyle' => Border::BORDER_THIN,
-                                    'color' => ['rgb' => '000000']
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                                'color' => ['rgb' => '000000']
                                 ]
                             ],
-                            'fill' => [
-                                'fillType' => Fill::FILL_SOLID,
-                                'startColor' => ['rgb' => 'F2F2F2']
-                            ],
-                            'alignment' => [
-                                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                        'alignment' => [
+                            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
                             ]
                         ];
 
-                        $event->sheet->getStyle('A2:N2')->applyFromArray($dataRowStyle);
+                        $event->sheet->getStyle('A2:AB2')->applyFromArray($dataRowStyle);
 
-                        $centerColumns = ['A', 'E', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'];
+                        $event->sheet->getStyle('M2:Q2')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('D9EAF7'); // biru super muda
+                        $event->sheet->getStyle('R2:V2')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('E2F0D9'); // hijau super muda
+    
+                        $centerColumns = ['A', 'G', 'I', 'J', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V'];
 
                         foreach ($centerColumns as $col) {
                             $event->sheet->getStyle("{$col}2")
@@ -428,11 +495,13 @@ class ImportController extends Controller
                                 ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                         }
 
-                        $sheet->setAutoFilter('A1:N1');
+                        $sheet->setAutoFilter('A1:AB1');
                         $sheet->freezePane('A2');
                     }
                 ];
             }
-        }, $filename);
+            },
+            $filename
+        );
     }
 }

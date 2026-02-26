@@ -284,7 +284,7 @@ class AssessmentController extends Controller
             'tanggal_penilaian' => $validated['tanggal_penilaian'],
             'nama' => $user->nama,
             'jabatan' => $user->jabatan,
-            'dept_seksi' => $user->dept,
+            'dept' => $user->dept,
             'npk' => $user->npk,
             'golongan' => $user->golongan,
             'status' => 'completed',

@@ -18,7 +18,10 @@
                                         Import Data dari Excel
                                     </h5>
                                 </div>
-                                <div class="col-md-6 text-end">
+                                <div class="col-md-6 flex text-end">
+                                    <a href="{{ route('import.template') }}" class="btn btn-success btn-sm">
+                                        <i class="ti ti-download"></i> Download Template Excel Baru
+                                    </a>
                                     <a href="{{ route('assessment') }}" class="btn btn-secondary btn-sm">
                                         <i class="ti ti-arrow-left"></i> Kembali ke Daftar
                                     </a>
@@ -118,19 +121,6 @@
                                     </button>
                                 </div>
                             </form>
-                        </div>
-                    </div>
-
-                    <!-- Template Download -->
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h5>Download Template</h5>
-                        </div>
-                        <div class="card-body">
-                            <p>Download template Excel dengan format yang benar dan dropdown untuk PERIODE:</p>
-                            <a href="{{ route('import.template') }}" class="btn btn-success">
-                                <i class="ti ti-download"></i> Download Template Excel Baru
-                            </a>
                         </div>
                     </div>
                 </div>

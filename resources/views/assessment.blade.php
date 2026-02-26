@@ -122,7 +122,12 @@
                                                     @endif
                                                 </td>
                                                 <td class="text-center">{{ $assessment->jabatan }}</td>
-                                                <td class="text-center">{{ $assessment->dept_seksi }}</td>
+                                                <td class="text-center">
+                                                    {{ $assessment->dept }}
+                                                    @if ($assessment->seksi)
+                                                        <br><small class="text-muted">{{ $assessment->seksi }}</small>
+                                                    @endif
+                                                </td>
                                                 <td class="text-center">{{ $assessment->periode_penilaian }}</td>
                                                 <td class="text-center">{{ $assessment->tanggal_penilaian }}</td>
                                                 <td class="text-center">
@@ -257,8 +262,16 @@
                                     <div class="fw-bold text-warning" id="view-golongan">-</div>
                                 </div>
                                 <div class="col-md-3 mb-2">
-                                    <div class="text-muted small">Dept/Seksi</div>
+                                    <div class="text-muted small">Dept</div>
                                     <div class="fw-bold text-secondary" id="view-dept">-</div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="text-muted small">Seksi</div>
+                                    <div class="fw-bold text-secondary" id="view-seksi">-</div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="text-muted small">Sub Seksi</div>
+                                    <div class="fw-bold text-secondary" id="view-sub-seksi">-</div>
                                 </div>
                                 <div class="col-md-3 mb-2">
                                     <div class="text-muted small">Periode</div>
@@ -702,7 +715,9 @@
                 $('#view-nama').text(data.nama);
                 $('#view-jabatan').text(data.jabatan);
                 $('#view-golongan').text(data.golongan);
-                $('#view-dept').text(data.dept_seksi);
+                $('#view-dept').text(data.dept);
+                $('#view-seksi').text(data.seksi || '-');
+                $('#view-sub-seksi').text(data.sub_seksi || '-');
                 $('#view-periode').text(data.periode_penilaian);
                 let tanggal = data.tanggal_penilaian;
                 if (tanggal) {

@@ -83,14 +83,19 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
-                                        <label for="dept_seksi" class="form-label">Dept / Seksi</label>
-                                        <input type="text" class="form-control" id="dept_seksi"
-                                            value="{{ $assessment->dept_seksi }}" readonly>
+                                        <label for="dept" class="form-label">Dept / Seksi</label>
+                                        <input type="text" class="form-control" id="dept"
+                                            value="{{ $assessment->dept }} ({{ $assessment->seksi }})" readonly>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="golongan" class="form-label">Golongan</label>
                                         <input type="text" class="form-control" id="golongan"
                                             value="{{ $assessment->golongan }}" readonly>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="sub_seksi" class="form-label">Sub Seksi</label>
+                                        <input type="text" class="form-control" id="sub_seksi"
+                                            value="{{ $assessment->sub_seksi }}" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -557,8 +562,8 @@
                     '{{ $assessment->npk }}';
                 document.getElementById('nama').value = selectedOption.getAttribute('data-nama') ||
                     '{{ $assessment->nama }}';
-                document.getElementById('dept_seksi').value = selectedOption.getAttribute('data-dept') ||
-                    '{{ $assessment->dept_seksi }}';
+                document.getElementById('dept').value = selectedOption.getAttribute('data-dept') ||
+                    '{{ $assessment->dept }}';
                 document.getElementById('jabatan').value = selectedOption.getAttribute('data-jabatan') ||
                     '{{ $assessment->jabatan }}';
                 document.getElementById('golongan').value = '{{ $assessment->golongan }}';
@@ -710,7 +715,7 @@
             if (option.value) {
                 document.getElementById('npk').value = option.getAttribute('data-npk') || '';
                 document.getElementById('nama').value = option.getAttribute('data-nama') || '';
-                document.getElementById('dept_seksi').value = option.getAttribute('data-dept') || '';
+                document.getElementById('dept').value = option.getAttribute('data-dept') || '';
                 document.getElementById('jabatan').value = option.getAttribute('data-jabatan') || '';
 
                 const golonganAngka = option.getAttribute('data-golongan') || '';

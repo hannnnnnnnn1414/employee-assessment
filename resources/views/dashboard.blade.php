@@ -194,7 +194,7 @@
                                             <tr>
                                                 <td class="text-center">
                                                     <strong>{{ $assessment->nama }}</strong>
-                                                    <div class="small text-muted">{{ $assessment->dept_seksi }}</div>
+                                                    <div class="small text-muted">{{ $assessment->dept }}</div>
                                                 </td>
                                                 <td class="text-center">
                                                     <span

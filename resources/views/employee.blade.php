@@ -89,6 +89,8 @@
                                             <th class="text-center">NPK</th>
                                             <th class="text-center">Nama</th>
                                             <th class="text-center">Department</th>
+                                            <th class="text-center">Seksi</th> 
+                                            <th class="text-center">Sub_Seksi</th> 
                                             <th class="text-center">Jabatan</th>
                                             <th class="text-center">Golongan</th>
                                             <th class="text-center">Aksi</th>
@@ -102,11 +104,15 @@
                                                 <td class="text-center">
                                                     <strong>{{ $user->nama }}</strong>
                                                 </td>
-                                                <td class="text-center">
-                                                    <span class="badge bg-primary">{{ $user->dept }}</span>
+                                                <td class="text-center">{{ $user->dept }}</span>
+                                                </td>
+                                                <td class="text-center">{{ $user->seksi }}</span>
+                                                </td>
+                                                <td class="text-center">{{ $user->sub_seksi }}</span>
                                                 </td>
                                                 <td class="text-center">{{ $user->jabatan ?? '-' }}</td>
-                                                <td class="text-center">{{ $user->golongan ?? '-' }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-primary">{{ $user->golongan ?? '-' }}</td> </span>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center flex-wrap gap-2">
                                                         <!-- Edit -->
@@ -117,6 +123,8 @@
                                                                 data-employee-npk="{{ $user->npk }}"
                                                                 data-employee-nama="{{ $user->nama }}"
                                                                 data-employee-dept="{{ $user->dept }}"
+                                                                data-employee-seksi="{{ $user->seksi }}"
+                                                                data-employee-sub_seksi="{{ $user->sub_seksi }}"
                                                                 data-employee-jabatan="{{ $user->jabatan }}"
                                                                 data-employee-golongan="{{ $user->golongan }}"
                                                                 title="Edit">
@@ -224,6 +232,16 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label for="seksi" class="form-label">Seksi *</label>
+                            <input type="text" class="form-control" id="seksi" name="seksi" required
+                                placeholder="Masukkan seksi">
+                        </div>
+                        <div class="mb-3">
+                            <label for="sub_seksi" class="form-label">Sub Seksi *</label>
+                            <input type="text" class="form-control" id="sub_seksi" name="sub_seksi" required
+                                placeholder="Masukkan sub seksi">
+                        </div>
+                        <div class="mb-3">
                             <label for="jabatan" class="form-label">Jabatan</label>
                             <input type="text" class="form-control" id="jabatan" name="jabatan"
                                 placeholder="Masukkan jabatan">
@@ -274,6 +292,16 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label for="edit_seksi" class="form-label">Seksi</label>
+                            <input type="text" class="form-control" id="edit_seksi" name="seksi"
+                                placeholder="Masukkan jabatan">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_sub_seksi" class="form-label">Sub Seksi</label>
+                            <input type="text" class="form-control" id="edit_sub_seksi" name="sub_seksi"
+                                placeholder="Masukkan jabatan">
+                        </div>
+                        <div class="mb-3">
                             <label for="edit_jabatan" class="form-label">Jabatan</label>
                             <input type="text" class="form-control" id="edit_jabatan" name="jabatan"
                                 placeholder="Masukkan jabatan">
@@ -310,12 +338,16 @@
                 const npk = $(this).data('employee-npk');
                 const nama = $(this).data('employee-nama');
                 const dept = $(this).data('employee-dept');
+                const seksi = $(this).data('employee-seksi');
+                const sub_seksi = $(this).data('employee-sub_seksi');
                 const jabatan = $(this).data('employee-jabatan') || '';
                 const golongan = $(this).data('employee-golongan') || '';
 
                 $('#edit_npk').val(npk);
                 $('#edit_nama').val(nama);
                 $('#edit_dept').val(dept);
+                $('#edit_seksi').val(seksi);
+                $('#edit_sub_seksi').val(sub_seksi);
                 $('#edit_jabatan').val(jabatan);
                 $('#edit_golongan').val(golongan);
                 $('#edit-employee-form').attr('action', `/employee/${employeeId}`);
