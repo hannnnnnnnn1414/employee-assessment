@@ -45,6 +45,16 @@
                         </a>
                     </li>
                 @endif
+                <li class="pc-item">
+                    <a href="#" class="pc-link" id="logout-link" style="color: red; cursor: pointer;">
+                        <span class="bi bi-box-arrow-left text-danger pc-micon"><i class="ti ti-power"></i></span>
+                        <span class="pc-mtext" style="color:red">Logout</span>
+                    </a>
+
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
+                </li>
             </ul>
         </div>
     </div>
@@ -87,13 +97,14 @@
                             <div class="d-flex mb-1">
                                 <div class="flex-grow-1 ms-3">
                                     <h6>{{ Auth::guard('lembur')->user()->full_name ?? 'Guest' }}</h6>
-                                    <span>{{ Auth::guard('lembur')->user()->npk ?? '' }} | {{ Auth::guard('lembur')->user()->dept ?? '' }}</span>
+                                    <span>{{ Auth::guard('lembur')->user()->npk ?? '' }} |
+                                        {{ Auth::guard('lembur')->user()->dept ?? '' }}</span>
                                 </div>
                                 <a href="#!" class="pc-head-link bg-transparent"><i
                                         class="ti ti-power text-danger"></i></a>
                             </div>
                         </div>
-                        <div class="tab-content" id="mysrpTabContent">
+                        {{-- <div class="tab-content" id="mysrpTabContent">
                             <div class="tab-pane fade show active" id="drp-tab-1" role="tabpanel"
                                 aria-labelledby="drp-t1" tabindex="0">
                                 <form method="POST" action="{{ route('logout') }}">
@@ -105,7 +116,7 @@
                                     </button>
                                 </form>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </li>
             </ul>
@@ -113,3 +124,28 @@
     </div>
 </header>
 <!-- [ Header ] end -->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.getElementById('logout-link').addEventListener('click', function(e) {
+        e.preventDefault();
+
+        Swal.fire({
+            title: 'Yakin mau logout?',
+            text: "Sesi kamu akan diakhiri dan harus login lagi nanti.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Logout',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    });
+</script>
