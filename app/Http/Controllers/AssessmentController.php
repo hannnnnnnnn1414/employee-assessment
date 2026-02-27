@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Assessment;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class AssessmentController extends Controller
@@ -67,14 +68,21 @@ class AssessmentController extends Controller
         return $config['non-mgr'] ?? ['prestasi' => 0.60, 'non_prestasi' => 0.35, 'man_management' => 0.05];
     }
 
-    // public function show($id)
-    // {
-    //     $assessment = Assessment::with('user')->findOrFail($id);
-    //     return view('assessment-show-modal', compact('assessment'));
-    // }
+    public function show($id)
+    {
+        $assessment = Assessment::with('user')->findOrFail($id);
+
+        // if (Auth::user()->dept !== 'HRD' && $assessment->dept !== Auth::user()->dept) {
+        //     abort(403);
+        // }
+
+        return view('assessments.show', compact('assessment'));
+    }
 
     public function edit($id)
     {
+        $defaultAssessor = Auth::user();
+
         $assessment = Assessment::with('user')->findOrFail($id);
 
         $periodes = Assessment::select('periode_penilaian')
@@ -85,7 +93,7 @@ class AssessmentController extends Controller
 
         $users = User::orderBy('nama')->get();
 
-        return view('assessment-edit', compact('assessment', 'users', 'periodes'));
+        return view('assessments/edit', compact('assessment', 'users', 'periodes', 'defaultAssessor'));
     }
 
     public function update(Request $request, $id)
@@ -127,7 +135,7 @@ class AssessmentController extends Controller
             'kelemahan' => $validated['kelemahan'] ?? null,
             'yang_menilai' => $validated['yang_menilai'] ?? null,
             'atasan_yang_menilai' => $validated['atasan_yang_menilai'] ?? null,
-            'status' => 'completed', 
+            'status' => 'completed',
             'submitted_at' => now(),
         ]));
 
@@ -177,7 +185,7 @@ class AssessmentController extends Controller
 
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $assessments = $this->getFilteredAssessments(
             $user,
@@ -187,7 +195,7 @@ class AssessmentController extends Controller
 
         $users = $this->getUsersForDropdown($user);
 
-        return view('assessment', [
+        return view('assessments/index', [
             'assessments' => $assessments,
             'users' => $users,
             'periodes' => self::PERIODES
@@ -243,7 +251,7 @@ class AssessmentController extends Controller
             'Periode 2 | April - September'
         ];
 
-        return view('assessment-create', compact('users', 'periodes'));
+        return view('assessments/create', compact('users', 'periodes'));
     }
 
     public function store(Request $request)
@@ -285,6 +293,8 @@ class AssessmentController extends Controller
             'nama' => $user->nama,
             'jabatan' => $user->jabatan,
             'dept' => $user->dept,
+            'seksi' => $user->seksi,
+            'sub_seksi' => $user->sub_seksi,
             'npk' => $user->npk,
             'golongan' => $user->golongan,
             'status' => 'completed',

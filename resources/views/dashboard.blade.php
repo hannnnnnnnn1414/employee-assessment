@@ -3,6 +3,25 @@
 
 <x-head></x-head>
 
+<style>
+        .avatar-sm {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-title {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+    </style>
+
 <!-- [Body] Start -->
 
 <body>
@@ -470,25 +489,6 @@
             })
         });
     </script>
-
-    <style>
-        .avatar-sm {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .avatar-title {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-    </style>
 
 </body>
 <!-- [Body] end -->

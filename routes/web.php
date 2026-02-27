@@ -33,6 +33,7 @@ Route::middleware(['auth:lembur'])->group(function () {
     Route::get('/assessment/{id}/edit', [AssessmentController::class, 'edit'])->name('assessment.edit');
     Route::put('/assessment/{id}', [AssessmentController::class, 'update'])->name('assessment.update');
     Route::delete('/assessment/{id}', [AssessmentController::class, 'destroy'])->name('assessment.destroy');
+    Route::get('/assessment/{id}', [AssessmentController::class, 'show'])->name('assessment.show');
 
     Route::get('/import', [ImportController::class, 'index'])->name('import');
     Route::post('/import', [ImportController::class, 'store'])->name('import.store');

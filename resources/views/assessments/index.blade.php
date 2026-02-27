@@ -3,6 +3,98 @@
 
 <x-head></x-head>
 
+<style>
+    .text-purple {
+        color: #6f42c1 !important;
+    }
+
+    .nilai-mutu-BS {
+        color: #198754;
+    }
+
+    .nilai-mutu-B {
+        color: #0dcaf0;
+    }
+
+    .nilai-mutu-C {
+        color: #fd7e14;
+    }
+
+    .nilai-mutu-K {
+        color: #ffc107;
+    }
+
+    .nilai-mutu-KS {
+        color: #dc3545;
+    }
+
+    .text-purple {
+        color: #6f42c1 !important;
+    }
+
+    .table-row-prestasi {
+        background-color: rgba(25, 135, 84, 0.05);
+    }
+
+    .table-row-nonprestasi {
+        background-color: rgba(253, 126, 20, 0.05);
+    }
+
+    .table-row-man {
+        background-color: rgba(220, 53, 69, 0.05);
+    }
+
+    .table-total {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+
+    .table-row-prestasi td:first-child {
+        border-left: 4px solid #198754 !important;
+    }
+
+    .table-row-nonprestasi td:first-child {
+        border-left: 4px solid #fd7e14 !important;
+    }
+
+    .table-row-man td:first-child {
+        border-left: 4px solid #dc3545 !important;
+    }
+
+    .table-total td:first-child {
+        border-left: 4px solid #0d6efd !important;
+    }
+
+    .badge-nilai-mutu-BS {
+        color: #198754;
+        font-weight: bold;
+    }
+
+    .badge-nilai-mutu-B {
+        color: #0dcaf0;
+        font-weight: bold;
+    }
+
+    .badge-nilai-mutu-C {
+        color: #fd7e14;
+        font-weight: bold;
+    }
+
+    .badge-nilai-mutu-K {
+        color: #ffc107;
+        font-weight: bold;
+    }
+
+    .badge-nilai-mutu-KS {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .bg-orange {
+        background-color: #fd7e14 !important;
+        color: white !important;
+    }
+</style>
+
 <body>
     @include('components.layout')
 
@@ -159,7 +251,7 @@
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center flex gap-2">
                                                         <!-- View -->
-                                                        <div class="text-center action-item" style="width:50px;">
+                                                        {{-- <div class="text-center action-item" style="width:50px;">
                                                             <button type="button"
                                                                 class="btn p-0 border-0 bg-transparent view-assessment"
                                                                 data-assessment-id="{{ $assessment->id }}"
@@ -167,7 +259,20 @@
                                                                 title="Lihat Detail">
                                                                 <i class="bi bi-eye fs-4 text-secondary"></i>
                                                             </button>
-                                                            <div class="small text-muted" style="font-size: 11px;">View
+                                                            <div class="small text-muted" style="font-size: 11px;">
+                                                                Detail
+                                                            </div>
+                                                        </div> --}}
+
+                                                        <!-- Detail -->
+                                                        <div class="text-center action-item" style="width:50px;">
+                                                            <a href="{{ route('assessment.show', $assessment->id) }}"
+                                                                class="btn p-0 border-0 bg-transparent"
+                                                                title="Lihat Detail">
+                                                                <i class="bi bi-eye fs-4 text-primary"></i>
+                                                            </a>
+                                                            <div class="small text-muted" style="font-size: 11px;">
+                                                                Detail
                                                             </div>
                                                         </div>
 
@@ -572,100 +677,6 @@
         </div>
     </div>
 
-    <style>
-        /* Custom color classes */
-        .text-purple {
-            color: #6f42c1 !important;
-        }
-
-        /* Nilai mutu colors */
-        .nilai-mutu-BS {
-            color: #198754;
-        }
-
-        .nilai-mutu-B {
-            color: #0dcaf0;
-        }
-
-        .nilai-mutu-C {
-            color: #fd7e14;
-        }
-
-        .nilai-mutu-K {
-            color: #ffc107;
-        }
-
-        .nilai-mutu-KS {
-            color: #dc3545;
-        }
-    </style>
-
-    <style>
-        /* Custom styles untuk font colorful */
-        .text-purple {
-            color: #6f42c1 !important;
-        }
-
-        .table-row-prestasi {
-            background-color: rgba(25, 135, 84, 0.05);
-        }
-
-        .table-row-nonprestasi {
-            background-color: rgba(253, 126, 20, 0.05);
-        }
-
-        .table-row-man {
-            background-color: rgba(220, 53, 69, 0.05);
-        }
-
-        .table-total {
-            background-color: rgba(13, 110, 253, 0.05);
-        }
-
-        /* Border color untuk each section */
-        .table-row-prestasi td:first-child {
-            border-left: 4px solid #198754 !important;
-        }
-
-        .table-row-nonprestasi td:first-child {
-            border-left: 4px solid #fd7e14 !important;
-        }
-
-        .table-row-man td:first-child {
-            border-left: 4px solid #dc3545 !important;
-        }
-
-        .table-total td:first-child {
-            border-left: 4px solid #0d6efd !important;
-        }
-
-        /* Badge color for nilai mutu */
-        .badge-nilai-mutu-BS {
-            color: #198754;
-            font-weight: bold;
-        }
-
-        .badge-nilai-mutu-B {
-            color: #0dcaf0;
-            font-weight: bold;
-        }
-
-        .badge-nilai-mutu-C {
-            color: #fd7e14;
-            font-weight: bold;
-        }
-
-        .badge-nilai-mutu-K {
-            color: #ffc107;
-            font-weight: bold;
-        }
-
-        .badge-nilai-mutu-KS {
-            color: #dc3545;
-            font-weight: bold;
-        }
-    </style>
-
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteAssessmentModal" tabindex="-1" aria-labelledby="deleteAssessmentModalLabel"
         aria-hidden="true">
@@ -800,13 +811,6 @@
             }
         });
     </script>
-
-    <style>
-        .bg-orange {
-            background-color: #fd7e14 !important;
-            color: white !important;
-        }
-    </style>
 </body>
 
 </html>

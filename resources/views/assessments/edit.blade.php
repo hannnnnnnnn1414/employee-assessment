@@ -18,7 +18,7 @@
                                 <div class="col-md-6">
                                     <h5 class="mb-0">
                                         <i class="ti ti-clipboard"></i>
-                                        Buat Penilaian Karya Karyawan
+                                        Edit Penilaian Karyawan
                                     </h5>
                                 </div>
                                 <div class="col-md-6 text-end">
@@ -31,10 +31,11 @@
                     </div>
                 </div>
 
-                <!-- Form Penilaian -->
+                <!-- Form Edit Penilaian -->
                 <div class="col-12">
-                    <form action="{{ route('assessment.store') }}" method="POST" id="assessmentForm">
+                    <form action="{{ route('assessment.update', $assessment->id) }}" method="POST" id="assessmentForm">
                         @csrf
+                        @method('PUT')
 
                         <!-- Card Data Karyawan -->
                         <div class="card mb-4">
@@ -46,7 +47,7 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-md-12 mb-3">
+                                    {{-- <div class="col-md-12 mb-3">
                                         <label for="user_id" class="form-label">Pilih Karyawan *</label>
                                         <select class="form-control" id="user_id" name="user_id" required
                                             onchange="updateEmployeeData()">
@@ -55,35 +56,46 @@
                                                 <option value="{{ $user->id }}" data-npk="{{ $user->npk }}"
                                                     data-nama="{{ $user->nama }}" data-dept="{{ $user->dept }}"
                                                     data-jabatan="{{ $user->jabatan }}"
-                                                    data-golongan="{{ $user->golongan }}">
+                                                    data-golongan="{{ $user->golongan }}"
+                                                    {{ old('user_id', $assessment->user_id) == $user->id ? 'selected' : '' }}>
                                                     {{ $user->npk }} - {{ $user->nama }}
                                                 </option>
                                             @endforeach
                                         </select>
-                                    </div>
+                                    </div> --}}
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label for="npk" class="form-label">NPK</label>
-                                        <input type="text" class="form-control" id="npk" readonly>
+                                        <input type="text" class="form-control" id="npk"
+                                            value="{{ $assessment->npk }}" readonly>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="nama" class="form-label">Nama</label>
-                                        <input type="text" class="form-control" id="nama" readonly>
+                                        <input type="text" class="form-control" id="nama"
+                                            value="{{ $assessment->nama }}" readonly>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="jabatan" class="form-label">Jabatan</label>
-                                        <input type="text" class="form-control" id="jabatan" readonly>
+                                        <input type="text" class="form-control" id="jabatan"
+                                            value="{{ $assessment->jabatan }}" readonly>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label for="dept" class="form-label">Dept / Seksi</label>
-                                        <input type="text" class="form-control" id="dept" readonly>
+                                        <input type="text" class="form-control" id="dept"
+                                            value="{{ $assessment->dept }} ({{ $assessment->seksi }})" readonly>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="golongan" class="form-label">Golongan</label>
-                                        <input type="text" class="form-control" id="golongan" readonly>
+                                        <input type="text" class="form-control" id="golongan"
+                                            value="{{ $assessment->golongan }}" readonly>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="sub_seksi" class="form-label">Sub Seksi</label>
+                                        <input type="text" class="form-control" id="sub_seksi"
+                                            value="{{ $assessment->sub_seksi }}" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -101,18 +113,15 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="periode_penilaian" class="form-label">Periode Penilaian *</label>
-                                        <select class="form-control" id="periode_penilaian" name="periode_penilaian"
-                                            required>
-                                            <option value="">Pilih Periode</option>
-                                            @foreach ($periodes as $periode)
-                                                <option value="{{ $periode }}">{{ $periode }}</option>
-                                            @endforeach
-                                        </select>
+                                        <input type="text" class="form-control" id="periode_penilaian"
+                                            value="{{ $assessment->periode_penilaian }}" readonly>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="tanggal_penilaian" class="form-label">Tanggal Penilaian *</label>
                                         <input type="date" class="form-control" id="tanggal_penilaian"
-                                            name="tanggal_penilaian" required value="{{ date('Y-m-d') }}">
+                                            name="tanggal_penilaian"
+                                            value="{{ old('tanggal_penilaian', $assessment->tanggal_penilaian->format('Y-m-d')) }}"
+                                            readonly>
                                     </div>
                                 </div>
                             </div>
@@ -123,7 +132,9 @@
                             <div class="card-header bg-transparent border-bottom">
                                 <h5 class="mb-0 text-success">
                                     <i class="ti ti-trending-up"></i>
-                                    A. PRESTASI (Bobot: <span id="bobot-prestasi">0%</span>)
+                                    A. PRESTASI (Bobot: <span id="bobot-prestasi">
+                                        {{ $assessment->bobot_prestasi * 100 }}%
+                                    </span>)
                                 </h5>
                             </div>
                             <div class="card-body">
@@ -142,7 +153,8 @@
                                                 <td>Kualitas (Quality)</td>
                                                 <td>
                                                     <input type="number" class="form-control nilai-prestasi"
-                                                        name="kualitas" min="40" max="100" value="40"
+                                                        name="kualitas" min="40" max="100"
+                                                        value="{{ old('kualitas', $assessment->kualitas) }}"
                                                         onchange="calculateAll()">
                                                 </td>
                                             </tr>
@@ -152,7 +164,8 @@
                                                 <td>
                                                     <input type="number" class="form-control nilai-prestasi"
                                                         name="kuantitas" min="40" max="100"
-                                                        value="40" onchange="calculateAll()">
+                                                        value="{{ old('kuantitas', $assessment->kuantitas) }}"
+                                                        onchange="calculateAll()">
                                                 </td>
                                             </tr>
                                             <tr class="table-warning">
@@ -160,6 +173,7 @@
                                                         Prestasi</strong></td>
                                                 <td>
                                                     <input type="number" class="form-control" id="rata_prestasi"
+                                                        value="{{ old('rata_prestasi', $assessment->rata_prestasi) }}"
                                                         readonly>
                                                 </td>
                                             </tr>
@@ -168,7 +182,9 @@
                                                         Rata-rata)</strong></td>
                                                 <td>
                                                     <input type="number" class="form-control"
-                                                        id="sub_total_prestasi" name="sub_total_prestasi" readonly>
+                                                        id="sub_total_prestasi" name="sub_total_prestasi"
+                                                        value="{{ old('sub_total_prestasi', $assessment->sub_total_prestasi) }}"
+                                                        readonly>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -182,7 +198,9 @@
                             <div class="card-header bg-transparent border-bottom">
                                 <h5 class="mb-0 text-warning">
                                     <i class="ti ti-users"></i>
-                                    B. NON PRESTASI (Bobot: <span id="bobot-non-prestasi">0%</span>)
+                                    B. NON PRESTASI (Bobot: <span id="bobot-non-prestasi">
+                                        {{ $assessment->bobot_non_prestasi * 100 }}%
+                                    </span>)
                                 </h5>
                             </div>
                             <div class="card-body">
@@ -198,21 +216,36 @@
                                         <tbody>
                                             @php
                                                 $nonPrestasiItems = [
-                                                    ['name' => 'kerjasama', 'label' => 'Kerjasama (Team Work)'],
+                                                    [
+                                                        'name' => 'kerjasama',
+                                                        'label' => 'Kerjasama (Team Work)',
+                                                        'value' => $assessment->kerjasama,
+                                                    ],
                                                     [
                                                         'name' => 'inisiatif_kreatifitas',
                                                         'label' => 'Inisiatif dan Kreatifitas',
+                                                        'value' => $assessment->inisiatif_kreatifitas,
                                                     ],
                                                     [
                                                         'name' => 'keandalan_tanggung_jawab',
                                                         'label' => 'Keandalan / Tanggung Jawab',
+                                                        'value' => $assessment->keandalan_tanggung_jawab,
                                                     ],
-                                                    ['name' => 'disiplin', 'label' => 'Disiplin'],
+                                                    [
+                                                        'name' => 'disiplin',
+                                                        'label' => 'Disiplin',
+                                                        'value' => $assessment->disiplin_awal ?? $assessment->disiplin,
+                                                    ],
                                                     [
                                                         'name' => 'integritas_loyalitas',
                                                         'label' => 'Integritas / Loyalitas',
+                                                        'value' => $assessment->integritas_loyalitas,
                                                     ],
-                                                    ['name' => 'qcc_ss', 'label' => 'QCC & SS'],
+                                                    [
+                                                        'name' => 'qcc_ss',
+                                                        'label' => 'QCC & SS',
+                                                        'value' => $assessment->qcc_ss,
+                                                    ],
                                                 ];
                                             @endphp
                                             @foreach ($nonPrestasiItems as $index => $item)
@@ -222,7 +255,8 @@
                                                     <td>
                                                         <input type="number" class="form-control nilai-non-prestasi"
                                                             name="{{ $item['name'] }}" min="40" max="100"
-                                                            value="40" onchange="calculateAll()">
+                                                            value="{{ old($item['name'], $item['value']) }}"
+                                                            onchange="calculateAll()">
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -231,6 +265,7 @@
                                                         Prestasi</strong></td>
                                                 <td>
                                                     <input type="number" class="form-control" id="rata_non_prestasi"
+                                                        value="{{ old('rata_non_prestasi', $assessment->rata_non_prestasi) }}"
                                                         readonly>
                                                 </td>
                                             </tr>
@@ -240,6 +275,7 @@
                                                 <td>
                                                     <input type="number" class="form-control"
                                                         id="sub_total_non_prestasi" name="sub_total_non_prestasi"
+                                                        value="{{ old('sub_total_non_prestasi', $assessment->sub_total_non_prestasi) }}"
                                                         readonly>
                                                 </td>
                                             </tr>
@@ -254,7 +290,9 @@
                             <div class="card-header bg-transparent border-bottom">
                                 <h5 class="mb-0 text-danger">
                                     <i class="ti ti-businessplan"></i>
-                                    C. MAN MANAGEMENT (Bobot: <span id="bobot-man-management">0%</span>)
+                                    C. MAN MANAGEMENT (Bobot: <span id="bobot-man-management">
+                                        {{ $assessment->bobot_man_management * 100 }}%
+                                    </span>)
                                 </h5>
                             </div>
                             <div class="card-body">
@@ -274,7 +312,8 @@
                                                 <td>
                                                     <input type="number" class="form-control nilai-man-management"
                                                         name="mengarahkan_menghargai" min="40" max="100"
-                                                        value="40" onchange="calculateAll()">
+                                                        value="{{ old('mengarahkan_menghargai', $assessment->mengarahkan_menghargai) }}"
+                                                        onchange="calculateAll()">
                                                 </td>
                                             </tr>
                                             <tr class="table-warning">
@@ -283,6 +322,7 @@
                                                 <td>
                                                     <input type="number" class="form-control"
                                                         id="sub_total_man_management" name="sub_total_man_management"
+                                                        value="{{ old('sub_total_man_management', $assessment->sub_total_man_management) }}"
                                                         readonly>
                                                 </td>
                                             </tr>
@@ -304,11 +344,36 @@
                                 <div class="row">
                                     @php
                                         $demeritItems = [
-                                            ['name' => 'ijin', 'label' => 'Ijin', 'points' => 10],
-                                            ['name' => 'mangkir', 'label' => 'Mangkir', 'points' => 3],
-                                            ['name' => 'sp1', 'label' => 'SP I', 'points' => 4],
-                                            ['name' => 'sp2', 'label' => 'SP II', 'points' => 8],
-                                            ['name' => 'sp3', 'label' => 'SP III', 'points' => 12],
+                                            [
+                                                'name' => 'ijin',
+                                                'label' => 'Ijin (- Disiplin)',
+                                                'points' => 10,
+                                                'value' => $assessment->ijin ?? 0,
+                                            ],
+                                            [
+                                                'name' => 'mangkir',
+                                                'label' => 'Mangkir',
+                                                'points' => 3,
+                                                'value' => $assessment->mangkir ?? 0,
+                                            ],
+                                            [
+                                                'name' => 'sp1',
+                                                'label' => 'SP I',
+                                                'points' => 4,
+                                                'value' => $assessment->sp1 ?? 0,
+                                            ],
+                                            [
+                                                'name' => 'sp2',
+                                                'label' => 'SP II',
+                                                'points' => 8,
+                                                'value' => $assessment->sp2 ?? 0,
+                                            ],
+                                            [
+                                                'name' => 'sp3',
+                                                'label' => 'SP III',
+                                                'points' => 12,
+                                                'value' => $assessment->sp3 ?? 0,
+                                            ],
                                         ];
                                     @endphp
                                     @foreach ($demeritItems as $item)
@@ -317,14 +382,15 @@
                                                 {{ $item['label'] }} ({{ $item['points'] }})
                                             </label>
                                             <input type="number" class="form-control demerit"
-                                                name="{{ $item['name'] }}" value="0" min="0"
+                                                name="{{ $item['name'] }}"
+                                                value="{{ old($item['name'], $item['value']) }}" min="0"
                                                 onchange="calculateAll()">
                                         </div>
                                     @endforeach
                                     <div class="col-md-2 mb-3">
                                         <label for="demerit" class="form-label">Total Demerit</label>
                                         <input type="number" class="form-control" id="demerit" name="demerit"
-                                            readonly>
+                                            value="{{ old('demerit', $assessment->demerit) }}" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -343,12 +409,12 @@
                                     <div class="col-md-6 mb-3">
                                         <label for="kekuatan" class="form-label">Kekuatan</label>
                                         <textarea class="form-control" id="kekuatan" name="kekuatan" rows="4"
-                                            placeholder="Tuliskan kekuatan karyawan..."></textarea>
+                                            placeholder="Tuliskan kekuatan karyawan...">{{ old('kekuatan', $assessment->kekuatan) }}</textarea>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="kelemahan" class="form-label">Kelemahan</label>
                                         <textarea class="form-control" id="kelemahan" name="kelemahan" rows="4"
-                                            placeholder="Tuliskan kelemahan karyawan..."></textarea>
+                                            placeholder="Tuliskan kelemahan karyawan...">{{ old('kelemahan', $assessment->kelemahan) }}</textarea>
                                     </div>
                                 </div>
                             </div>
@@ -364,18 +430,24 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-md-6 mb-3">
+                                    {{-- <div class="col-md-6 mb-3">
                                         <label for="yang_menilai" class="form-label">Yang Menilai</label>
                                         <select name="yang_menilai" class="form-control" id="yang_menilai">
                                             <option value="">Pilih Penilai</option>
                                             @foreach ($users as $user)
                                                 <option value="{{ $user->nama }}">
+                                                    {{ old('yang_menilai', $defaultAssessor?->nama) === $user->nama ? 'selected' : '' }}>
                                                     {{ $user->nama }} - Golongan {{ $user->golongan }}
                                                 </option>
                                             @endforeach
                                         </select>
-                                    </div>
+                                    </div> --}}
                                     <div class="col-md-6 mb-3">
+                                        <label for="yang_menilai" class="form-label">Yang Menilai *</label>
+                                        <input type="text" class="form-control" id="yang_menilai"
+                                            value="{{ $assessment->yang_menilai }} (Golongan {{ $assessment->golongan }})" readonly>
+                                    </div>
+                                    {{-- <div class="col-md-6 mb-3">
                                         <label for="atasan_yang_menilai" class="form-label">Atasan Yang
                                             Menilai</label>
                                         <select name="atasan_yang_menilai" class="form-control"
@@ -387,6 +459,11 @@
                                                 </option>
                                             @endforeach
                                         </select>
+                                    </div> --}}
+                                    <div class="col-md-6 mb-3">
+                                        <label for="atasan_yang_menilai" class="form-label">Atasan Yang Menilai *</label>
+                                        <input type="text" class="form-control" id="atasan_yang_menilai"
+                                            value="{{ $assessment->atasan_yang_menilai }}  (Golongan {{ $assessment->golongan }})"  readonly>
                                     </div>
                                 </div>
                             </div>
@@ -405,18 +482,20 @@
                                     <div class="col-md-4 mb-3">
                                         <label for="nilai_total" class="form-label">Nilai Total (A+B+C)</label>
                                         <input type="number" class="form-control" id="nilai_total"
-                                            name="nilai_total" readonly>
+                                            name="nilai_total"
+                                            value="{{ old('nilai_total', $assessment->nilai_total) }}" readonly>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="nilai_akhir" class="form-label">Nilai Akhir (Total -
                                             Demerit)</label>
                                         <input type="number" class="form-control" id="nilai_akhir"
-                                            name="nilai_akhir" readonly>
+                                            name="nilai_akhir"
+                                            value="{{ old('nilai_akhir', $assessment->nilai_akhir) }}" readonly>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label for="nilai_mutu" class="form-label">Nilai Mutu</label>
                                         <input type="text" class="form-control" id="nilai_mutu" name="nilai_mutu"
-                                            readonly>
+                                            value="{{ old('nilai_mutu', $assessment->nilai_mutu) }}" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -429,7 +508,7 @@
                                     <i class="ti ti-x"></i> Batal
                                 </a>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="ti ti-check"></i> Simpan Penilaian
+                                    <i class="ti ti-check"></i> Update Penilaian
                                 </button>
                             </div>
                         </div>
@@ -486,6 +565,24 @@
             }
         };
 
+        document.addEventListener('DOMContentLoaded', function() {
+            const userSelect = document.getElementById('user_id');
+            const selectedOption = userSelect.options[userSelect.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                document.getElementById('npk').value = selectedOption.getAttribute('data-npk') ||
+                    '{{ $assessment->npk }}';
+                document.getElementById('nama').value = selectedOption.getAttribute('data-nama') ||
+                    '{{ $assessment->nama }}';
+                document.getElementById('dept').value = selectedOption.getAttribute('data-dept') ||
+                    '{{ $assessment->dept }}';
+                document.getElementById('jabatan').value = selectedOption.getAttribute('data-jabatan') ||
+                    '{{ $assessment->jabatan }}';
+                document.getElementById('golongan').value = '{{ $assessment->golongan }}';
+            }
+
+            calculateAll();
+        });
+
         document.querySelector('input[name="ijin"]').addEventListener('input', function() {
             const ijintotal = parseInt(this.value) || 0;
             const disiplinInput = document.querySelector('input[name="disiplin"]');
@@ -537,13 +634,11 @@
             };
         }
 
-
         function calculateAll() {
             const golongan = document.getElementById('golongan').value;
             const jabatan = document.getElementById('jabatan').value;
 
             if (!golongan) {
-                resetCalculations();
                 return;
             }
 
@@ -616,21 +711,6 @@
             document.getElementById('nilai_mutu').value = nilaiMutu;
         }
 
-        function resetCalculations() {
-            const resetFields = [
-                'rata_prestasi', 'sub_total_prestasi',
-                'rata_non_prestasi', 'sub_total_non_prestasi',
-                'sub_total_man_management', 'demerit',
-                'nilai_total', 'nilai_akhir', 'nilai_mutu'
-            ];
-
-            resetFields.forEach(id => document.getElementById(id).value = '');
-
-            document.getElementById('bobot-prestasi').textContent = '0%';
-            document.getElementById('bobot-non-prestasi').textContent = '0%';
-            document.getElementById('bobot-man-management').textContent = '0%';
-        }
-
         function getNilaiMutu(nilai) {
             if (nilai >= 90) return 'BS';
             if (nilai >= 80) return 'B';
@@ -654,8 +734,6 @@
                 document.getElementById('golongan').value = golonganRomawi;
 
                 calculateAll();
-            } else {
-                resetCalculations();
             }
         }
 
@@ -676,10 +754,6 @@
                 input.addEventListener('input', calculateAll);
                 input.addEventListener('change', calculateAll);
             });
-
-            if (document.getElementById('user_id').value) {
-                calculateAll();
-            }
         });
 
         document.getElementById('assessmentForm').addEventListener('submit', function(e) {
@@ -697,12 +771,15 @@
 
             if (!isValid) {
                 e.preventDefault();
+                e.stopPropagation();
                 alert('Harap lengkapi semua field yang wajib diisi!');
+                return false;
             }
+
+            this.querySelector('button[type="submit"]').innerHTML = '<i class="ti ti-loader"></i> Menyimpan...';
+            this.querySelector('button[type="submit"]').disabled = true;
         });
     </script>
-
-
 </body>
 
 </html>
