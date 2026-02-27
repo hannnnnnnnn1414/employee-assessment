@@ -31,31 +31,37 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
 
+        $npk = $request->input('npk');
+
+        $hpRecord = Hp::where('npk', $npk)->first();
+
+        if (!$hpRecord) {
+            return redirect()->route('login')
+                ->with('error', 'NPK tidak memiliki nomor HP terdaftar. Hubungi admin.')
+                ->withInput();
+        }
+
         $credentials = $request->only('npk', 'password');
 
         if (!Auth::guard('lembur')->attempt($credentials)) {
-
-            return redirect()->route('login')->with('error', 'NPK atau password salah');
-            // return back()->withErrors(['npk' => 'NPK atau password salah'])->withInput();
+            return redirect()->route('login')
+                ->with('error', 'NPK atau password salah')
+                ->withInput();
         }
 
         $user = Auth::guard('lembur')->user();
 
-        Auth::guard('lembur')->logout();
-
-        $hpRecord = Hp::where('npk', $user->npk)->first();
-
-        if (!$hpRecord) {
-            // Auth::guard('lembur')->logout();
-            return redirect()->route('login')->with('error', 'NPK tidak memiliki nomor HP terdaftar');
-            // return back()->withErrors(['npk' => 'NPK tidak memiliki nomor HP terdaftar. Hubungi admin.'])->withInput();
+        if ($user->npk !== $hpRecord->npk) {
+            Auth::guard('lembur')->logout();
+            return redirect()->route('login')
+                ->with('error', 'Data tidak sesuai. Hubungi admin.');
         }
 
         Otp::where('user_id', $user->id)->where('is_used', false)->delete();
 
         $otp = Otp::create([
             'user_id' => $user->id,
-            'otp_code' => '123456',
+            'otp_code' => rand(100000, 999999), 
             'expires_at' => now()->addMinutes(5),
         ]);
 
@@ -66,8 +72,9 @@ class LoginController extends Controller
             'auth_guard' => 'lembur',
         ]);
 
-        return redirect()->route('otp.verify');
+        Auth::guard('lembur')->logout();
 
+        return redirect()->route('otp.verify');
     }
 
     public function showOtpForm()
