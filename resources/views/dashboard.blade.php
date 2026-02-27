@@ -175,7 +175,7 @@
             <!-- Tabel & Informasi Tambahan -->
             <div class="row mt-5">
                 <!-- Penilaian Terbaru -->
-                <div class="col-md-12 col-xl-6">
+                {{-- <div class="col-md-12 col-xl-6">
                     <h5 class="mb-3">Penilaian Terbaru</h5>
                     <div class="card">
                         <div class="card-body">
@@ -316,7 +316,7 @@
                             </div>
                         </div>
                     @endif
-                </div>
+                </div> --}}
             </div>
 
         </div>

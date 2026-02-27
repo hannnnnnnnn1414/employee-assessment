@@ -57,6 +57,43 @@ class ImportController extends Controller
         }
     }
 
+    // private function processExcelData(array $rows)
+    // {
+    //     $importedCount = 0;
+
+    //     if (count($rows) < 2) {
+    //         return 0;
+    //     }
+
+    //     for ($i = 1; $i < count($rows); $i++) {
+    //         $row = $rows[$i];
+
+    //         if (empty($row[1]) || empty($row[2])) {
+    //             continue;
+    //         }
+
+    //         try {
+    //             DB::transaction(function () use ($row, &$importedCount) {
+    //                 $userData = $this->prepareUserData($row);
+
+    //                 $user = User::where('npk', $userData['npk'])->first();
+
+    //                 if (!$user) {
+    //                     $user = User::create($userData);
+    //                 } else {
+    //                     $user->update($userData);
+    //                 }
+
+    //                 $this->processAssessmentData($user, $row);
+    //                 $importedCount++;
+    //             });
+    //         } catch (\Exception $e) {
+    //         }
+    //     }
+
+    //     return $importedCount;
+    // }
+
     private function processExcelData(array $rows)
     {
         $importedCount = 0;
@@ -69,27 +106,52 @@ class ImportController extends Controller
             $row = $rows[$i];
 
             if (empty($row[1]) || empty($row[2])) {
+                Log::info("Baris ke-{$i} dilewati: NPK atau Nama kosong", ['row' => $row]);
                 continue;
             }
 
+            $npk = $this->cleanValue($row[1], true);
+            $nama = $this->cleanValue($row[2]);
+
             try {
-                DB::transaction(function () use ($row, &$importedCount) {
+                DB::transaction(function () use ($row, &$importedCount, $i, $npk, $nama) {
                     $userData = $this->prepareUserData($row);
 
                     $user = User::where('npk', $userData['npk'])->first();
 
                     if (!$user) {
                         $user = User::create($userData);
+                        Log::info("Baris {$i} - User BARU dibuat", [
+                            'npk' => $npk,
+                            'nama' => $nama,
+                            'user_id' => $user->id
+                        ]);
                     } else {
                         $user->update($userData);
+                        Log::info("Baris {$i} - User DIUPDATE", [
+                            'npk' => $npk,
+                            'nama' => $nama,
+                            'user_id' => $user->id
+                        ]);
                     }
 
                     $this->processAssessmentData($user, $row);
                     $importedCount++;
                 });
             } catch (\Exception $e) {
+                Log::error("Baris {$i} - GAGAL diproses", [
+                    'npk' => $npk ?? '-',
+                    'nama' => $nama ?? '-',
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
             }
         }
+
+        Log::info("Import selesai", [
+            'total_baris_diproses' => $importedCount,
+            'total_baris_excel' => count($rows) - 1,
+        ]);
 
         return $importedCount;
     }
@@ -116,8 +178,36 @@ class ImportController extends Controller
         ];
     }
 
+    // private function processAssessmentData(User $user, array $row)
+    // {
+    //     for ($i = 12; $i <= 16; $i++) {
+    //         if ((int) $this->cleanValue($row[$i] ?? 0, false, true) > 0) {
+    //             $hasP1 = true;
+    //             break;
+    //         }
+    //     }
+
+    //     $hasP2 = false;
+    //     for ($i = 17; $i <= 21; $i++) {
+    //         if ((int) $this->cleanValue($row[$i] ?? 0, false, true) > 0) {
+    //             $hasP2 = true;
+    //             break;
+    //         }
+    //     }
+
+    //     if ($hasP1) {
+    //         $this->processOnePeriod($user, $row, $this->getPeriode1(), 12, 13, 14, 15, 16);
+    //     }
+
+    //     if ($hasP2) {
+    //         $this->processOnePeriod($user, $row, $this->getPeriode2(), 17, 18, 19, 20, 21);
+    //     }
+
+    // }
+
     private function processAssessmentData(User $user, array $row)
     {
+        $hasP1 = false;
         for ($i = 12; $i <= 16; $i++) {
             if ((int) $this->cleanValue($row[$i] ?? 0, false, true) > 0) {
                 $hasP1 = true;
@@ -133,6 +223,13 @@ class ImportController extends Controller
             }
         }
 
+        Log::debug("Assessment check untuk {$user->npk}", [
+            'hasP1' => $hasP1,
+            'hasP2' => $hasP2,
+            'row_indices_12-16' => array_slice($row, 12, 5),
+            'row_indices_17-21' => array_slice($row, 17, 5),
+        ]);
+
         if ($hasP1) {
             $this->processOnePeriod($user, $row, $this->getPeriode1(), 12, 13, 14, 15, 16);
         }
@@ -140,7 +237,6 @@ class ImportController extends Controller
         if ($hasP2) {
             $this->processOnePeriod($user, $row, $this->getPeriode2(), 17, 18, 19, 20, 21);
         }
-
     }
 
     private function processOnePeriod(User $user, array $row, string $periode, int $sdIdx, int $mstIdx, int $sp1Idx, int $sp2Idx, int $sp3Idx)
@@ -356,7 +452,7 @@ class ImportController extends Controller
             ]
         ];
 
-        $filename = 'template_import_penilaian_' . date('Ymd_His') . '.xlsx';
+        $filename = 'employee_assessment' . '.xlsx';
 
         return Excel::download(
             new class ($data) implements FromArray, \Maatwebsite\Excel\Concerns\WithEvents {
