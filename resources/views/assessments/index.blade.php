@@ -250,20 +250,6 @@
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center flex gap-2">
-                                                        <!-- View -->
-                                                        {{-- <div class="text-center action-item" style="width:50px;">
-                                                            <button type="button"
-                                                                class="btn p-0 border-0 bg-transparent view-assessment"
-                                                                data-assessment-id="{{ $assessment->id }}"
-                                                                data-assessment-data='@json($assessment)'
-                                                                title="Lihat Detail">
-                                                                <i class="bi bi-eye fs-4 text-secondary"></i>
-                                                            </button>
-                                                            <div class="small text-muted" style="font-size: 11px;">
-                                                                Detail
-                                                            </div>
-                                                        </div> --}}
-
                                                         <!-- Detail -->
                                                         <div class="text-center action-item" style="width:50px;">
                                                             <a href="{{ route('assessment.show', $assessment->id) }}"

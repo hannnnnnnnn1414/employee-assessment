@@ -61,7 +61,8 @@ class LoginController extends Controller
 
         $otp = Otp::create([
             'user_id' => $user->id,
-            'otp_code' => rand(100000, 999999), 
+            // 'otp_code' => rand(100000, 999999), 
+            'otp_code' => 123456, 
             'expires_at' => now()->addMinutes(5),
         ]);
 

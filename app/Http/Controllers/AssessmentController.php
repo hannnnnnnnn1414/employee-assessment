@@ -81,7 +81,7 @@ class AssessmentController extends Controller
 
     public function edit($id)
     {
-        $defaultAssessor = Auth::user();
+        $defaultAssessor = Assessment::first();
 
         $assessment = Assessment::with('user')->findOrFail($id);
 
